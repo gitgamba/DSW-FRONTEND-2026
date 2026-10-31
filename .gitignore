@@ -4,3 +4,8 @@ dist
 
 # Anotaciones personales del equipo (deploy y defensa): no se suben
 anotaciones.txt
+
+# Resultados de pruebas y credenciales locales del E2E
+test-results/
+playwright-report/
+.env.e2e

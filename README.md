@@ -66,7 +66,7 @@ src/
     SincronizarModal.tsx   trae las reservas de Stays en un rango de fechas
     Movimientos.tsx        planilla de check-ins y check-outs: asignar operador desde cada fila
     NotaModal.tsx          la nota de un movimiento
-    Agenda.tsx             pestañas Lista / Calendario + filtro de operador (no para Limpieza)
+    Agenda.tsx             pestañas Lista / Calendario + filtro de operador (no para Operador)
     AgendaLista.tsx        próximos 7 días, agrupados por día
     AgendaCalendario.tsx   FullCalendar (mes y semana)
     MovimientoModal.tsx    detalle de un movimiento + "Marcar como hecho" (lo usan las dos vistas)
@@ -75,7 +75,7 @@ src/
 
 ### Cómo funciona
 
-- **Sesión.** El login (`POST /auth/login`) devuelve el token y el usuario, que se guardan en `localStorage` para que la sesión sobreviva al F5. El rol es la descripción del tipo de usuario. Si el token guardado ya venció, la primera llamada a la API responde 401 y se vuelve al login.
+- **Sesión.** El login (`POST /auth/login`) devuelve el token y el usuario, que se guardan en `localStorage` para que la sesión sobreviva al F5. El permiso viene de tipoUsuario.rolBase; el nombre del puesto no determina el acceso. Si el token guardado ya venció, la primera llamada a la API responde 401 y se vuelve al login.
   - Tradeoff elegido: `localStorage` lo puede leer cualquier script de la página, así que un XSS podría robar el token. React escapa todo lo que mostramos y no usamos `dangerouslySetInnerHTML`, así que el riesgo es bajo; a cambio no hay que loguearse en cada recarga.
 - **Llamadas a la API.** Todas pasan por `apiFetch` (`src/api.ts`), que agrega `Authorization: Bearer <token>` y convierte los errores de la API (`{ error, detalle? }`) en mensajes para mostrar. Si la API responde `401` con un token, la sesión venció: se borra y se vuelve al login con el aviso *"Tu sesión venció"*.
 - **Permisos.** Las rutas y el menú se filtran por rol solo para que cada uno vea lo suyo. Quien controla de verdad es la API (`401`/`403`): ocultar un botón no es seguridad.
@@ -87,7 +87,7 @@ src/
 - **Fechas.** La API manda las fechas como `"2026-11-10T00:00:00.000Z"`. Se muestran cortando el texto (`formato.ts`) y no con `new Date()`, porque esa medianoche UTC en Argentina es el día anterior.
 - **Filtros de Reservas en la URL** (`?desde=...&inmuebleId=...`, con `useSearchParams`): al volver del detalle con *Atrás*, el listado sigue filtrado. Sin `desde` en la URL se muestran de hoy en adelante; *Limpiar* muestra todas. El filtro por operador solo lo ve el Administrador, porque `GET /usuarios` es solo suyo.
 - **Movimientos: asignar sin recargar.** Al elegir un operador se guarda en el momento (`PATCH /movimientos/:id/asignar`) y se cambia solo esa fila con `setData` de `useFetch`, así la lista no parpadea ni pierde el scroll. Si la API rechaza el cambio, el desplegable vuelve solo al operador anterior, porque se dibuja con los datos y esos no cambiaron.
-- **Agenda.** Usa `GET /movimientos/agenda`, que ya trae una fila por movimiento con su fecha y hora. La lista pide de hoy a 6 días después; el calendario pide el rango que muestra, que FullCalendar avisa con `datesSet` (mientras no lo avisa, `useFetch` recibe `null` y no pide nada). Las pestañas se desmontan al salir (`unmountOnExit`), así lo que se marca como hecho en una aparece en la otra. *Marcar como hecho* no manda fecha: la API guarda la hora de ahora. Limpieza ve solo lo suyo porque lo filtra la API, no el front.
+- **Agenda.** Usa `GET /movimientos/agenda`, que ya trae una fila por movimiento con su fecha y hora. La lista pide de hoy a 6 días después; el calendario pide el rango que muestra, que FullCalendar avisa con `datesSet` (mientras no lo avisa, `useFetch` recibe `null` y no pide nada). Las pestañas se desmontan al salir (`unmountOnExit`), así lo que se marca como hecho en una aparece en la otra. *Marcar como hecho* no manda fecha: la API guarda la hora de ahora. Operador ve solo lo suyo porque lo filtra la API, no el front.
 - **Notificaciones.** El contador del Navbar (`GET /notificaciones/mias?noLeidas=true`) se vuelve a pedir cada vez que cambia la pantalla (`useEffect` con `location.pathname`), no cada tantos segundos. La pantalla de Notificaciones, que no cambia de ruta al marcar todas, le pide al Layout que recuente con la función que este le pasa por `<Outlet context>`. En celular el contador va al lado de la hamburguesa, porque el menú está cerrado. *Marcar todas* hace un `PATCH` por cada una con `Promise.all` (la API no tiene uno para todas).
 
 ### Patrón para las próximas pantallas
@@ -106,12 +106,12 @@ Lo hecho y lo que falta:
 
 - [x] **Reservas** (Administrador, Supervisor): listado con filtros, detalle, alta/edición/baja (Administrador).
 - [x] **Sincronización con Stays** (Administrador): botón en Reservas con rango de fechas y el resumen.
-- [x] **Movimientos** (Administrador, Supervisor): planilla por fecha, asignar/desasignar operador (usa `GET /usuarios/operadores`, que devuelve solo los de Limpieza y Supervisor) y nota.
-- [x] **Agenda** (todos; Limpieza solo lo suyo): próximos 7 días + calendario de mes y semana, marcar como hecho.
-- [ ] Cancelar/reactivar un movimiento: la API ya lo tiene (`PATCH /movimientos/:id` con `estado`), falta el botón.
+- [x] **Movimientos** (Administrador, Supervisor): planilla por fecha, asignar/desasignar operador (usa `GET /usuarios/operadores`, que devuelve solo los de Operador y Supervisor) y nota.
+- [x] **Agenda** (todos; Operador solo lo suyo): próximos 7 días + calendario de mes y semana, marcar como hecho.
+- [ ] Reactivación de cancelados: fuera del alcance. La API los mantiene bloqueados para edición, asignación y realización.
 - [x] **Notificaciones** (todos): las mías, marcar como leída (una o todas), contador de no leídas en el Navbar.
-- [ ] Inmuebles y huéspedes (Administrador): CRUD, si hace falta además de lo que trae la sincronización.
-- [ ] Deploy en Vercel: el repo ya está listo (ver "Deploy (Vercel)"); falta hacerlo, después de que el back esté en Render.
+- [x] Inmuebles, huéspedes y tipos de usuario: CRUD administrativos preparados localmente.
+- [x] Deploy existente en Vercel. Las nuevas funciones locales requieren publicar backend y frontend actualizados.
 
 ## Deploy (Vercel)
 
@@ -169,3 +169,29 @@ En Render → el servicio → **Environment**, cambiar `CORS_ORIGIN` por la URL 
    | El login da *"El servidor tuvo un problema"* | El back no llega a la base: firewall de Azure o base pausada (ver el README del back) |
 
 Cada `git push` a `main` vuelve a deployar el front solo.
+
+## Funciones nuevas y pruebas
+
+- Tipos de usuario, Inmuebles y Huéspedes tienen listado, detalle para edición, alta, modificación y baja. Solo Administrador accede a estas pantallas.
+- El identificador es obligatorio: puede ser el ID de Stays o un código propio para un registro manual.
+- Administrador y Supervisor recuperan movimientos faltantes desde el detalle de Reserva y pueden borrarlos con confirmación. La baja elimina su notificación.
+- La agenda consulta el detalle del movimiento al abrirlo y muestra cuándo se realizó.
+- Sesiones antiguas sin rolBase o con datos ilegibles se descartan: volver a iniciar sesión.
+- El menú colapsa hasta xxl para que las ocho opciones administrativas entren sin desbordarse.
+- Los tests del frontend son OBLIGATORIOS para aprobación: `npm test` (componente) y `npm run test:e2e` (navegador + API local real).
+- Para E2E, instalar Chromium con `npx playwright install chromium`, definiendo PLAYWRIGHT_BROWSERS_PATH al directorio hermano .playwright-browsers como hace la configuración. No iniciar servidores manualmente: el test levanta puertos 3000 y 5173.
+- Las credenciales se leen del .env ignorado del backend (SEED_ADMIN_*) o de variables E2E_ADMIN_NOMBRE/E2E_ADMIN_PASSWORD. Se puede usar un archivo .env.e2e ignorado con esas dos variables. Nunca se incluyen en código ni reportes.
+- El E2E está limitado a URLs locales, corre en serie, crea fixtures E2E-DSW- y los borra al comienzo y al final. La base sigue siendo la del equipo: habilitar la IP y aplicar la migración antes.
+- [Documentación de este repositorio](docs/README.md) y [documentación central](https://github.com/gitgamba/DSW-303-2026/tree/main/docs).
+
+Ejemplo de instalación del navegador para E2E en PowerShell, desde este repositorio:
+
+```powershell
+$env:PLAYWRIGHT_BROWSERS_PATH = Join-Path (Resolve-Path ..) '.playwright-browsers'
+npx playwright install chromium
+npm run test:e2e
+```
+
+Verificación local del 30/10/2026 con Node 24.22.2: check y build OK, 3 casos de
+componente y 1 recorrido E2E real aprobados. Formularios revisados a 375/576/768/992 px.
+La migración ya se aplicó en Azure; el código nuevo aún requiere publicación coordinada.

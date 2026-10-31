@@ -1,8 +1,9 @@
 // Las formas de los datos que devuelve la API (ver el README del back)
 
-export type Rol = 'Administrador' | 'Supervisor' | 'Limpieza';
+export type Rol = 'Administrador' | 'Supervisor' | 'Operador';
 
 export interface TipoUsuario {
+  rolBase: Rol;
   id: number;
   descripcion: string;
 }
@@ -63,6 +64,12 @@ export interface FilaAgenda {
   inmueble: { id: number; direccion: string };
   usuario: { id: number; nombre: string } | null;
   descripcion: string | null;
+}
+
+// GET /movimientos/:id incluye la reserva y el inmueble, además de cuándo se realizó.
+export interface MovimientoDetalle extends Movimiento {
+  reservaId: number;
+  reserva: Reserva;
 }
 
 // Se crea sola cuando a alguien le asignan un movimiento

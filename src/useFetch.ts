@@ -12,10 +12,12 @@ export function useFetch<T>(ruta: string | null) {
   const cargar = async () => {
     if (ruta === null) return;
     setLoading(true);
+    setError(null);
     try {
       setData(await apiFetch<T>(ruta));
       setError(null);
     } catch (err) {
+      setData(null); // Un error al recargar no debe dejar datos anteriores visibles.
       setError((err as Error).message);
     } finally {
       setLoading(false);

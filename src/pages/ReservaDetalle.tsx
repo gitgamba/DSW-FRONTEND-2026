@@ -15,6 +15,8 @@ import { useAuth } from '../AuthContext';
 import { useFetch } from '../useFetch';
 import { formatearFecha, formatearImporte } from '../formato';
 import type { Movimiento, Reserva } from '../types';
+import { MovimientoAltaModal } from './MovimientoAltaModal';
+import { MovimientoBorrarModal } from './MovimientoBorrarModal';
 import { ReservaForm } from './ReservaForm';
 
 // Color del estado de cada movimiento
@@ -24,6 +26,9 @@ export function ReservaDetalle() {
   const { id } = useParams(); // el :id de la ruta /reservas/:id
   const { rol } = useAuth();
   const esAdmin = rol === 'Administrador';
+  const puedeGestionar = esAdmin || rol === 'Supervisor';
+  const [mostrarAltaMovimiento, setMostrarAltaMovimiento] = useState(false);
+  const [borrarMovimientoId, setBorrarMovimientoId] = useState<number | null>(null);
   const navigate = useNavigate();
   const { data: reserva, loading, error, cargar } = useFetch<Reserva>(`/reservas/${id}`);
 
@@ -60,6 +65,8 @@ export function ReservaDetalle() {
   if (error || !reserva) {
     return <>{volver}<Alert variant="danger">{error}</Alert></>;
   }
+
+  const disponibles = (['CHECK_IN', 'CHECK_OUT'] as const).filter(tipo => !reserva.movimientos?.some(m => m.tipo === tipo));
 
   return (
     <>
@@ -125,7 +132,7 @@ export function ReservaDetalle() {
 
         <Col xs={12}>
           <Card>
-            <Card.Header>Movimientos</Card.Header>
+            <Card.Header className="d-flex flex-wrap justify-content-between gap-2">Movimientos{puedeGestionar && disponibles.length > 0 && <Button size="sm" onClick={() => setMostrarAltaMovimiento(true)}>Agregar movimiento</Button>}</Card.Header>
             <Table responsive className="mb-0 align-middle">
               <thead>
                 <tr>
@@ -133,6 +140,7 @@ export function ReservaDetalle() {
                   <th>Estado</th>
                   <th>Operador</th>
                   <th className="d-none d-sm-table-cell">Realizado</th>
+                  {puedeGestionar && <th>Acciones</th>}
                 </tr>
               </thead>
               <tbody>
@@ -142,6 +150,7 @@ export function ReservaDetalle() {
                     <td><Badge bg={COLOR_ESTADO[m.estado]}>{m.estado}</Badge></td>
                     <td>{m.usuario?.nombre ?? <span className="text-body-secondary">Sin asignar</span>}</td>
                     <td className="d-none d-sm-table-cell">{realizado(m)}</td>
+                    {puedeGestionar && <td><Button size="sm" variant="outline-danger" onClick={() => setBorrarMovimientoId(m.id)}>Borrar movimiento</Button></td>}
                   </tr>
                 ))}
               </tbody>
@@ -150,6 +159,8 @@ export function ReservaDetalle() {
         </Col>
       </Row>
 
+      {mostrarAltaMovimiento && <MovimientoAltaModal reservaId={reserva.id} disponibles={disponibles} onCerrar={() => setMostrarAltaMovimiento(false)} onGuardado={() => { setMostrarAltaMovimiento(false); setAviso('Se creó el movimiento.'); cargar(); }} />}
+      {borrarMovimientoId !== null && <MovimientoBorrarModal movimientoId={borrarMovimientoId} onCerrar={() => setBorrarMovimientoId(null)} onBorrado={() => { setBorrarMovimientoId(null); setAviso('Se borró el movimiento.'); cargar(); }} />}
       {mostrarEdicion && (
         <ReservaForm reserva={reserva} onCerrar={() => setMostrarEdicion(false)} onGuardado={handleGuardado} />
       )}

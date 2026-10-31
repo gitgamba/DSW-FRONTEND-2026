@@ -12,6 +12,7 @@ import { apiFetch } from '../api';
 import { useFetch } from '../useFetch';
 import { formatearFecha, hoy } from '../formato';
 import type { FilaAgenda } from '../types';
+import { MovimientoBorrarModal } from './MovimientoBorrarModal';
 import { NotaModal } from './NotaModal';
 
 const COLOR_ESTADO = { PENDIENTE: 'warning', REALIZADO: 'success', CANCELADO: 'secondary' };
@@ -28,12 +29,13 @@ export function Movimientos() {
   if (desde) query.set('desde', desde);
   if (hasta) query.set('hasta', hasta);
   const { data: filas, loading, error, cargar, setData } = useFetch<FilaAgenda[]>(`/movimientos/agenda?${query}`);
-  // Solo los de Limpieza y Supervisor, que son a quienes se puede asignar
+  // Solo los de Operador y Supervisor, que son a quienes se puede asignar
   const operadores = useFetch<{ id: number; nombre: string }[]>('/usuarios/operadores');
 
   const [guardandoId, setGuardandoId] = useState<number | null>(null); // la fila que se está guardando
   const [errorGuardar, setErrorGuardar] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
+  const [borrarId, setBorrarId] = useState<number | null>(null);
   const [filaNota, setFilaNota] = useState<FilaAgenda | null>(null); // la fila con el modal de nota abierto
 
   // Reemplaza una fila de la lista por su versión nueva
@@ -143,7 +145,7 @@ export function Movimientos() {
                     ))}
                   </Form.Select>
                 </Col>
-                <Col xs={4} md={1} className="text-end">
+                <Col xs={4} md={1} className="text-end d-flex flex-column gap-1">
                   {guardandoId === f.id ? (
                     <Spinner size="sm" />
                   ) : (
@@ -151,6 +153,7 @@ export function Movimientos() {
                       Nota
                     </Button>
                   )}
+                  <Button variant="outline-danger" size="sm" onClick={() => setBorrarId(f.id)}>Borrar</Button>
                 </Col>
               </Row>
             </ListGroup.Item>
@@ -158,6 +161,7 @@ export function Movimientos() {
         </ListGroup>
       )}
 
+      {borrarId !== null && <MovimientoBorrarModal movimientoId={borrarId} onCerrar={() => setBorrarId(null)} onBorrado={() => { setBorrarId(null); setAviso('Se borró el movimiento.'); cargar(); }} />}
       {filaNota && (
         <NotaModal
           movimientoId={filaNota.id}

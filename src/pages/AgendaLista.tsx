@@ -70,8 +70,8 @@ export function AgendaLista({ usuarioId }: { usuarioId: string }) {
                   <div className="fw-semibold">{f.inmueble.direccion}</div>
                   <div className="small text-body-secondary">
                     {f.titular}
-                    {/* A Limpieza no le sirve ver su propio nombre en cada fila */}
-                    {rol !== 'Limpieza' && ` · ${f.usuario?.nombre ?? 'Sin asignar'}`}
+                    {/* A Operador no le sirve ver su propio nombre en cada fila */}
+                    {rol !== 'Operador' && ` · ${f.usuario?.nombre ?? 'Sin asignar'}`}
                   </div>
                   {f.descripcion && <div className="small fst-italic">Nota: {f.descripcion}</div>}
                 </div>

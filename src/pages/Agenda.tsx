@@ -8,7 +8,7 @@ import { AgendaLista } from './AgendaLista';
 import { AgendaCalendario } from './AgendaCalendario';
 
 // La hoja de ruta de check-ins y check-outs, en lista (próximos 7 días) o en calendario.
-// Limpieza ve solo lo suyo (lo filtra la API); Administrador y Supervisor pueden elegir un operador.
+// Operador ve solo lo suyo (lo filtra la API); Administrador y Supervisor pueden elegir un operador.
 export function Agenda() {
   const { rol } = useAuth();
   const [usuarioId, setUsuarioId] = useState(''); // "" = todos
@@ -16,8 +16,8 @@ export function Agenda() {
   return (
     <>
       <div className="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-3">
-        <h1 className="h3 mb-0">{rol === 'Limpieza' ? 'Mi agenda' : 'Agenda'}</h1>
-        {rol !== 'Limpieza' && <FiltroOperador value={usuarioId} onChange={setUsuarioId} />}
+        <h1 className="h3 mb-0">{rol === 'Operador' ? 'Mi agenda' : 'Agenda'}</h1>
+        {rol !== 'Operador' && <FiltroOperador value={usuarioId} onChange={setUsuarioId} />}
       </div>
 
       {/* mountOnEnter + unmountOnExit: cada pestaña se arma (y pide sus datos) al abrirse. Así, lo que se
@@ -34,7 +34,7 @@ export function Agenda() {
   );
 }
 
-// Aparte para que el pedido de operadores no se haga si es Limpieza (la API le respondería 403)
+// Aparte para que el pedido de operadores no se haga si es Operador (la API le respondería 403)
 function FiltroOperador({ value, onChange }: { value: string; onChange: (valor: string) => void }) {
   const operadores = useFetch<{ id: number; nombre: string }[]>('/usuarios/operadores');
   return (

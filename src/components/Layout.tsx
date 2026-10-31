@@ -11,11 +11,14 @@ import type { Notificacion, Rol } from '../types';
 
 // Opciones del menú y quién las ve (los mismos roles que las rutas de App.tsx)
 const MENU: { ruta: string; texto: string; roles: Rol[] }[] = [
-  { ruta: '/agenda', texto: 'Agenda', roles: ['Administrador', 'Supervisor', 'Limpieza'] },
+  { ruta: '/agenda', texto: 'Agenda', roles: ['Administrador', 'Supervisor', 'Operador'] },
   { ruta: '/reservas', texto: 'Reservas', roles: ['Administrador', 'Supervisor'] },
   { ruta: '/movimientos', texto: 'Movimientos', roles: ['Administrador', 'Supervisor'] },
+  { ruta: '/tipos-usuario', texto: 'Tipos de usuario', roles: ['Administrador'] },
+  { ruta: '/inmuebles', texto: 'Inmuebles', roles: ['Administrador'] },
+  { ruta: '/huespedes', texto: 'Huéspedes', roles: ['Administrador'] },
   { ruta: '/usuarios', texto: 'Usuarios', roles: ['Administrador'] },
-  { ruta: '/notificaciones', texto: 'Notificaciones', roles: ['Administrador', 'Supervisor', 'Limpieza'] },
+  { ruta: '/notificaciones', texto: 'Notificaciones', roles: ['Administrador', 'Supervisor', 'Operador'] },
 ];
 
 export function Layout() {
@@ -45,18 +48,18 @@ export function Layout() {
 
   return (
     <>
-      {/* expand="lg": en celular y tablet el menú se colapsa en la hamburguesa; desde lg se muestra en línea
-          (con las 5 opciones y el usuario no entra en el ancho de md). collapseOnSelect cierra la hamburguesa al elegir. */}
-      <Navbar bg="dark" data-bs-theme="dark" expand="lg" collapseOnSelect sticky="top">
+      {/* Las ocho opciones de administración se despliegan en línea desde xxl.
+          collapseOnSelect cierra el menú al elegir una pantalla. */}
+      <Navbar bg="dark" data-bs-theme="dark" expand="xxl" collapseOnSelect sticky="top">
         <Container>
           <Navbar.Brand as={NavLink} to="/">Agenda</Navbar.Brand>
           {/* En celular y tablet el menú está cerrado: el aviso de no leídas va al lado de la hamburguesa */}
           {noLeidas > 0 && (
-            <NavLink to="/notificaciones" className="ms-auto me-2 d-lg-none text-decoration-none">
+            <NavLink to="/notificaciones" className="ms-auto me-2 d-xxl-none text-decoration-none">
               <Badge bg="danger" pill>{noLeidas} sin leer</Badge>
             </NavLink>
           )}
-          <Navbar.Toggle aria-controls="menu-principal" aria-label="Abrir menú" />
+          <Navbar.Toggle aria-controls="menu-principal" label="Abrir menú" />
           <Navbar.Collapse id="menu-principal">
             <Nav className="me-auto">
               {MENU.filter((opcion) => rol && opcion.roles.includes(rol)).map((opcion) => (
