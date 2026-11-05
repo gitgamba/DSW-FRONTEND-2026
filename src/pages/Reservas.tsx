@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, type SubmitEvent } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/Button';
@@ -42,7 +42,7 @@ export function Reservas() {
   const [mostrarSincronizar, setMostrarSincronizar] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
 
-  const handleBuscar = (e: FormEvent) => {
+  const handleBuscar = (e: SubmitEvent) => {
     e.preventDefault();
     setParams(filtros); // cambia la URL → cambia la ruta de useFetch → se vuelve a pedir
   };

@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, type SubmitEvent } from 'react';
 import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
@@ -18,7 +18,7 @@ export function MovimientoAltaModal({ reservaId, disponibles, onCerrar, onGuarda
   const [descripcion, setDescripcion] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
-  const guardar = async (e: FormEvent) => {
+  const guardar = async (e: SubmitEvent) => {
     e.preventDefault(); setError(null);
     if (!disponibles.includes(tipo) || descripcion.trim().length > 500) {
       setError('Elegí un tipo disponible y una nota de hasta 500 caracteres.'); return;

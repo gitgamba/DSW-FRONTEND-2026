@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, type SubmitEvent } from 'react';
 import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
@@ -19,7 +19,7 @@ export function TipoUsuarioForm({ registro, onCerrar, onGuardado }: Props) {
   const [errorApi, setErrorApi] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
 
-  const guardar = async (evento: FormEvent) => {
+  const guardar = async (evento: SubmitEvent) => {
     evento.preventDefault();
     setErrorApi(null);
     const nuevos: typeof errores = {};

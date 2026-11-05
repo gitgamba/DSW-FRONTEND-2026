@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, type SubmitEvent } from 'react';
 import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
@@ -21,7 +21,7 @@ export function InmuebleForm({ registro, onCerrar, onGuardado }: Props) {
   const [errores, setErrores] = useState<Record<string, string>>({});
   const [errorApi, setErrorApi] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
-  const guardar = async (evento: FormEvent) => {
+  const guardar = async (evento: SubmitEvent) => {
     evento.preventDefault(); setErrorApi(null);
     const e: Record<string, string> = {};
     if (!campos.staysId.trim() || campos.staysId.trim().length > 50) e.staysId = 'Es obligatorio. Como máximo 50 caracteres.';
