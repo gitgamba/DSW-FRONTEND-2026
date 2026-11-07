@@ -9,11 +9,11 @@ import type { Rol } from '../types';
 export function RutaProtegida({ roles, children }: { roles?: Rol[]; children: ReactNode }) {
   const { usuario, rol } = useAuth();
 
-  if (!usuario) {
+  if (!usuario) { //Chequeo de sesión
     return <Navigate to="/login" replace />;
   }
-  if (roles && (!rol || !roles.includes(rol))) {
+  if (roles && (!rol || !roles.includes(rol))) { //Chequeo de rol
     return <Alert variant="warning">No tenés permiso para ver esta pantalla.</Alert>;
   }
-  return children;
+  return children; //Todo OK, muestra la pagina
 }

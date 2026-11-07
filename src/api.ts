@@ -6,9 +6,11 @@ if (!API_URL) {
 }
 
 // Uso: apiFetch<Usuario[]>('/usuarios') o apiFetch('/usuarios', { method: 'POST', body: JSON.stringify(datos) })
+//Sin opciones, hace GET. Con body, hace POST. Con method, hace PUT o DELETE. Devuelve la respuesta parseada como JSON.
 export async function apiFetch<T>(ruta: string, opciones: RequestInit = {}): Promise<T> {
   const token = localStorage.getItem('token');
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' }; 
+  //objeto id/valor string para pasarle a fetch. Content-Type es para que la API sepa que el body es JSON.
   if (token) {
     headers.Authorization = `Bearer ${token}`;
   }

@@ -10,7 +10,7 @@ interface AuthValor {
   logout: () => void;
 }
 
-const AuthContext = createContext<AuthValor | null>(null);
+const AuthContext = createContext<AuthValor | null>(null);  //Inicializo contexto
 
 // El token va en localStorage para que la sesión sobreviva al F5 (decisión del equipo).
 // Si ya venció, la primera llamada a la API responde 401 y apiFetch nos manda al login.
@@ -35,16 +35,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [sesion, setSesion] = useState<{ token: string | null; usuario: Usuario | null }>(leerSesion());
 
   const login = async (nombre: string, password: string) => {
-    const datos = await apiFetch<{ token: string; usuario: Usuario }>('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ nombre, password }),
+    const datos = await apiFetch<{ token: string; usuario: Usuario }>('/auth/login', { //apiFetch es wrapper de fetch que maneja token y errores
+      method: 'POST', //Post por envio de credenciales
+      body: JSON.stringify({ nombre, password }), //Se pasa a texto para ser usado por HTTP
     });
     localStorage.setItem('token', datos.token);
     localStorage.setItem('usuario', JSON.stringify(datos.usuario));
-    setSesion(datos);
+    setSesion(datos); //Actualiza estado y dispara re-render de todos los componentes que usan useAuth()
   };
 
-  const logout = () => {
+  //Al borrar estado , RutaProtegida detecta esto y redirige al login
+  const logout = () => { 
     localStorage.removeItem('token');
     localStorage.removeItem('usuario');
     setSesion({ token: null, usuario: null });
@@ -60,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useAuth() {
+export function useAuth() { //custom hook para no escribir useContext(AuthContext) en cada archivo.
   const contexto = useContext(AuthContext);
   if (!contexto) {
     throw new Error('useAuth debe usarse dentro de AuthProvider');
