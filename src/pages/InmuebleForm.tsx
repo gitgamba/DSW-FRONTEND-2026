@@ -29,7 +29,7 @@ export function InmuebleForm({ registro, onCerrar, onGuardado }: Props) {
     if (campos.precio !== '' && (!Number.isFinite(Number(campos.precio)) || Number(campos.precio) < 0)) e.precio = 'Ingresá un importe no negativo.';
     if (campos.capacidad !== '' && (!Number.isInteger(Number(campos.capacidad)) || Number(campos.capacidad) <= 0)) e.capacidad = 'Ingresá un entero positivo.';
     setErrores(e);
-    if (Object.keys(e).length) return;
+    if (Object.keys(e).length) return; //Si hay error, vuelve sin enviar la petición.
     setGuardando(true);
     try {
       const datos = {
@@ -39,7 +39,8 @@ export function InmuebleForm({ registro, onCerrar, onGuardado }: Props) {
         capacidad: campos.capacidad === '' ? null : Number(campos.capacidad),
         estado: campos.estado,
       };
-      await apiFetch('/inmuebles' + (registro ? '/' + registro.id : ''), {
+      await apiFetch('/inmuebles' + (registro ? '/' + registro.id : ''), //con registro path, sin registro post
+      {
         method: registro ? 'PATCH' : 'POST', body: JSON.stringify(datos),
       });
       onGuardado();

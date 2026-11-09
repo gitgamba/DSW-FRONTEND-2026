@@ -24,7 +24,7 @@ const MENU: { ruta: string; texto: string; roles: Rol[] }[] = [
 export function Layout() {
   const { usuario, rol, logout } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
+  const location = useLocation(); //da la url actual, para que el contador se actualice al cambiar de pantalla
   const [noLeidas, setNoLeidas] = useState(0);
 
   const contarNoLeidas = async () => {
@@ -39,9 +39,9 @@ export function Layout() {
   // El contador de notificaciones sin leer se vuelve a pedir cada vez que se cambia de pantalla
   useEffect(() => {
     contarNoLeidas();
-  }, [location.pathname]);
+  }, [location.pathname]); //Cuando cambia la ruta, se vuelve a contar
 
-  const handleLogout = () => {
+  const handleLogout = () => { // Cierra sesión y vuelve a la pantalla de login
     logout();
     navigate('/login');
   };
@@ -88,7 +88,9 @@ export function Layout() {
 
       <Container as="main" className="py-3 py-lg-4">
         {/* context: la pantalla de Notificaciones lo usa para actualizar el contador sin cambiar de pantalla */}
+        {/* Outlet es donde se renderiza la pantalla actual, según la ruta. El resto es el layout común a todas las pantallas */}
         <Outlet context={{ contarNoLeidas }} />
+        
       </Container>
     </>
   );

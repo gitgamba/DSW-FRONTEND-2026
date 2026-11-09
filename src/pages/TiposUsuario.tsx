@@ -18,6 +18,7 @@ export function TiposUsuario() {
   const [errorAccion, setErrorAccion] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
 
+  //Sin fila da alta, con fila es edicion
   const abrir = async (fila: TipoUsuario | null) => {
     setErrorAccion(null);
     if (!fila) { setEditando(null); setMostrar(true); return; }

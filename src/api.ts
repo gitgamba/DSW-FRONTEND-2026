@@ -13,11 +13,12 @@ export async function apiFetch<T>(ruta: string, opciones: RequestInit = {}): Pro
   //objeto id/valor string para pasarle a fetch. Content-Type es para que la API sepa que el body es JSON.
   if (token) {
     headers.Authorization = `Bearer ${token}`;
-  }
+  } //Envio el token en el header Authorization para que la API sepa quién soy y si tengo permiso.
 
   let respuesta: Response;
   try {
     respuesta = await fetch(API_URL + ruta, { ...opciones, headers });
+    //copia lo que mando, quien llamo y agrega los headers. Valida el backend
   } catch {
     // fetch solo falla así cuando no llega al servidor (sin red, back apagado, CORS)
     throw new Error('No se pudo conectar con el servidor. Revisá tu conexión y probá de nuevo.');
@@ -28,7 +29,7 @@ export async function apiFetch<T>(ruta: string, opciones: RequestInit = {}): Pro
   if (respuesta.status === 401 && token) {
     localStorage.removeItem('token');
     localStorage.removeItem('usuario');
-    window.location.assign('/login?vencida=1');
+    window.location.assign('/login?vencida=1'); //Fuerza reinicio de react
     throw new Error('Tu sesión venció. Volvé a iniciar sesión.');
   }
 
@@ -37,6 +38,7 @@ export async function apiFetch<T>(ruta: string, opciones: RequestInit = {}): Pro
     return undefined as T;
   }
 
+//
   const datos = await respuesta.json().catch(() => null);
   if (!respuesta.ok) {
     throw new Error(mensajeDeError(respuesta.status, datos));

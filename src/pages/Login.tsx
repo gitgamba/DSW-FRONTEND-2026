@@ -9,13 +9,13 @@ import Spinner from 'react-bootstrap/Spinner';
 import { useAuth } from '../AuthContext';
 
 export function Login() {
-  const { usuario, login } = useAuth();
-  const navigate = useNavigate();
-  const [params] = useSearchParams();
-  const [nombre, setNombre] = useState('');
+  const { usuario, login } = useAuth(); //contexto de sesión, con usuario y login/logout
+  const navigate = useNavigate(); //hook para cambiar de pagina sin recargar
+  const [params] = useSearchParams(); //hook para leer query params, por ejemplo ?vencida=1
+  const [nombre, setNombre] = useState(''); 
   const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [enviando, setEnviando] = useState(false);
+  const [error, setError] = useState<string | null>(null); //mensaje de error de login, si hubo uno
+  const [enviando, setEnviando] = useState(false); //para deshabilitar el boton mientras se espera la respuesta de la API
 
   // Si ya hay sesión, el login no tiene sentido
   if (usuario) {
@@ -23,7 +23,7 @@ export function Login() {
   }
 
   const handleSubmit = async (e: SubmitEvent) => {
-    e.preventDefault();
+    e.preventDefault(); //evita que el form haga un submit normal y recargue la página
     setError(null);
     setEnviando(true);
     try {
