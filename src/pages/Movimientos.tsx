@@ -28,6 +28,7 @@ export function Movimientos() {
   const query = new URLSearchParams();
   if (desde) query.set('desde', desde);
   if (hasta) query.set('hasta', hasta);
+  if (soloSinAsignar) query.set('sinAsignar', 'true');
   const { data: filas, loading, error, cargar, setData } = useFetch<FilaAgenda[]>(`/movimientos/agenda?${query}`);
   // Solo los de Operador y Supervisor, que son a quienes se puede asignar
   const operadores = useFetch<{ id: number; nombre: string }[]>('/usuarios/operadores');
@@ -51,7 +52,9 @@ export function Movimientos() {
     try {
       await apiFetch(`/movimientos/${fila.id}/asignar`, { method: 'PATCH', body: JSON.stringify({ usuarioId }) });
       const usuario = operadores.data?.find((o) => o.id === usuarioId) ?? null;
-      actualizarFila({ ...fila, usuario });
+      // Con el filtro activo, la fila ya no corresponde a la lista: se vuelve a pedir
+      if (soloSinAsignar) cargar();
+      else actualizarFila({ ...fila, usuario });
       setAviso(
         usuario
           ? `${nombreTipo(fila)} de ${fila.titular} asignado a ${usuario.nombre}. Le llega un aviso.`
@@ -70,8 +73,6 @@ export function Movimientos() {
     setFilaNota(null);
     setAviso('Se guardó la nota.');
   };
-
-  const visibles = soloSinAsignar ? filas?.filter((f) => f.usuario === null && f.estado === 'PENDIENTE') : filas;
 
   return (
     <>
@@ -112,11 +113,11 @@ export function Movimientos() {
 
       {loading ? (
         <div className="text-center py-5"><Spinner /><p className="mt-2">Cargando movimientos...</p></div>
-      ) : visibles && visibles.length === 0 ? (
+      ) : filas && filas.length === 0 ? (
         <Alert variant="secondary">No hay movimientos para mostrar.</Alert>
-      ) : visibles && (
+      ) : filas && (
         <ListGroup>
-          {visibles.map((f) => (
+          {filas.map((f) => (
             <ListGroup.Item key={f.id}>
               {/* Mobile-first: en el celular todo va apilado; desde md, en columnas */}
               <Row className="g-2 align-items-center">
