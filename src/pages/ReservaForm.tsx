@@ -76,9 +76,9 @@ export function ReservaForm({ reserva, onCerrar, onGuardado }: Props) {
   };
 
   const handleSubmit = async (e: SubmitEvent) => {
-    e.preventDefault();
+    e.preventDefault(); // No recarga la página
     setErrorApi(null);
-    if (!validar()) return;
+    if (!validar()) return; // no manda al back si hay errores de front
 
     setGuardando(true);
     // Los opcionales vacíos van como null: en la edición, eso borra el valor que tenía
