@@ -6,6 +6,11 @@ Usa React 19, Vite, TypeScript, React Router, react-bootstrap (Bootstrap 5) y Fu
 
 [Documentación](docs/README.md) · [Preparar otra PC y ejecutar las pruebas](docs/desarrollo-y-pruebas.md) · [Despliegue en Vercel](#deploy-vercel)
 
+## Enlaces de entrega
+
+- [Video de muestra](https://drive.google.com/file/d/1mR5La6TuBtTh3pgdFKk5MSmzHmg5TrIQ/view?usp=sharing).
+- [Aplicación publicada](https://dsw-frontend-2026.vercel.app/login).
+
 ## Requisitos
 
 - Node.js 24 (el mismo que el backend)
