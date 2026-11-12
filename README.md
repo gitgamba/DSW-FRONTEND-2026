@@ -4,6 +4,8 @@ Frontend del sistema de gestión de la agenda de operadores de una empresa de ho
 
 Usa React 19, Vite, TypeScript, React Router, react-bootstrap (Bootstrap 5) y FullCalendar 7 para el calendario.
 
+[Documentación](docs/README.md) · [Preparar otra PC y ejecutar las pruebas](docs/desarrollo-y-pruebas.md) · [Despliegue en Vercel](#deploy-vercel)
+
 ## Requisitos
 
 - Node.js 24 (el mismo que el backend)
@@ -12,10 +14,11 @@ Usa React 19, Vite, TypeScript, React Router, react-bootstrap (Bootstrap 5) y Fu
 ## Instalación
 
 ```bash
-npm install
+npm ci
 ```
 
 Copiá `.env.example` a `.env`. El `.env` no se sube al repo.
+La [guía de desarrollo y pruebas](docs/desarrollo-y-pruebas.md) incluye la comprobación de Node, instalación de Chromium y configuración del backend local para el E2E.
 
 | Variable | Para qué |
 |:-|:-|
@@ -181,8 +184,18 @@ Cada `git push` a `main` vuelve a deployar el front solo.
 - Los tests del frontend son OBLIGATORIOS para aprobación: `npm test` (componente) y `npm run test:e2e` (navegador + API local real).
 - Para E2E, instalar Chromium con `npx playwright install chromium`, definiendo PLAYWRIGHT_BROWSERS_PATH al directorio hermano .playwright-browsers como hace la configuración. No iniciar servidores manualmente: el test levanta puertos 3000 y 5173.
 - Las credenciales se leen del .env ignorado del backend (SEED_ADMIN_*) o de variables E2E_ADMIN_NOMBRE/E2E_ADMIN_PASSWORD. Se puede usar un archivo .env.e2e ignorado con esas dos variables. Nunca se incluyen en código ni reportes.
-- El E2E está limitado a URLs locales, corre en serie, crea fixtures E2E-DSW- y los borra al comienzo y al final. La base sigue siendo la del equipo: habilitar la IP y aplicar la migración antes.
-- [Documentación de este repositorio](docs/README.md) y [documentación central](https://github.com/gitgamba/DSW-303-2026/tree/main/docs).
+- El E2E está limitado a URLs locales, corre en serie, crea fixtures E2E-DSW- y los borra al comienzo y al final. La base sigue siendo la del equipo: habilitar la IP pública de la conexión y comprobar que el esquema esté actualizado. Coordinar cualquier migración pendiente; no ejecutarla como parte rutinaria de la preparación de otra PC.
+- [Preparar la PC, ejecutar los tests y resolver errores](docs/desarrollo-y-pruebas.md).
+- [Documentación de este repositorio](docs/README.md) y [repositorio central de la propuesta y la entrega](https://github.com/gitgamba/DSW-303-2026). Confirmar por separado la publicación de la documentación académica complementaria.
+
+Pruebas de componente (sin API ni Azure) y E2E (con API local y base real), desde este repositorio:
+
+```powershell
+npm test
+npm run test:e2e
+```
+
+Antes del E2E, completar la preparación de la guía. El test levanta ambos servidores automáticamente.
 
 Ejemplo de instalación del navegador para E2E en PowerShell, desde este repositorio:
 
@@ -194,4 +207,4 @@ npm run test:e2e
 
 Verificación local del 30/10/2026 con Node 24.22.2: check y build OK, 3 casos de
 componente y 1 recorrido E2E real aprobados. Formularios revisados a 375/576/768/992 px.
-La migración ya se aplicó en Azure; el código nuevo aún requiere publicación coordinada.
+Este resultado es histórico; una ejecución nueva debe registrar su propia [evidencia](docs/desarrollo-y-pruebas.md#evidencia-para-la-entrega).

@@ -44,8 +44,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSesion(datos); //Actualiza estado y dispara re-render de todos los componentes que usan useAuth()
   };
 
+
   //Al borrar estado , RutaProtegida detecta esto y redirige al login
-  const logout = () => { 
+  const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('usuario');
     setSesion({ token: null, usuario: null });
