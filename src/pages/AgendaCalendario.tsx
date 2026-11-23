@@ -8,6 +8,7 @@ import '@fullcalendar/react/skeleton.css';
 import '@fullcalendar/react/themes/classic/theme.css';
 import '@fullcalendar/react/themes/classic/palette.css';
 import Alert from 'react-bootstrap/Alert';
+import { aFechaISO, ZONA_ARGENTINA } from '../formato';
 import { useAgenda } from '../useAgenda';
 import type { FilaAgenda } from '../types';
 import { MovimientoModal } from './MovimientoModal';
@@ -50,9 +51,9 @@ export function AgendaCalendario({ usuarioId }: { usuarioId: string }) {
         headerToolbar={{ start: 'prev,next today', center: 'title', end: 'dayGridMonth,timeGridWeek' }}
         height="auto"
         events={eventos}
-        // startStr/endStr pueden traer hora ("2026-10-26T00:00:00-03:00"): nos quedamos con la fecha.
-        // endStr es el día siguiente al último que se ve; traer un día de más no molesta.
-        datesSet={(info) => setRango({ desde: info.startStr.slice(0, 10), hasta: info.endStr.slice(0, 10) })}
+        // start/end son medianoche en Argentina; se pasan a "AAAA-MM-DD" para la API.
+        // end es el día siguiente al último que se ve; traer un día de más no molesta.
+        datesSet={(info) => setRango({ desde: aFechaISO(info.start, ZONA_ARGENTINA), hasta: aFechaISO(info.end, ZONA_ARGENTINA) })}
         eventClick={(info) => setSeleccionada(info.event.extendedProps.fila as FilaAgenda)}
       />
 

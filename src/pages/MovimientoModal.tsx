@@ -8,7 +8,7 @@ import Spinner from 'react-bootstrap/Spinner';
 import { apiFetch } from '../api';
 import { useAuth } from '../AuthContext';
 import { useFetch } from '../useFetch';
-import { formatearFecha } from '../formato';
+import { fechaParaInput, formatearFecha } from '../formato';
 import type { FilaAgenda, MovimientoDetalle } from '../types';
 
 interface Props { fila: FilaAgenda; onCerrar: () => void; onRealizado: (fila: FilaAgenda) => void }
@@ -26,7 +26,7 @@ export function MovimientoModal({ fila, onCerrar, onRealizado }: Props) {
       const esEntrada = actualizado.tipo === 'CHECK_IN';
       onRealizado({
         ...fila, estado: actualizado.estado, descripcion: actualizado.descripcion, usuario: actualizado.usuario,
-        fecha: (esEntrada ? actualizado.reserva.fechaInicio : actualizado.reserva.fechaFin).slice(0, 10),
+        fecha: fechaParaInput(esEntrada ? actualizado.reserva.fechaInicio : actualizado.reserva.fechaFin),
         hora: esEntrada ? actualizado.reserva.horaInicio : actualizado.reserva.horaFin,
         inmueble: actualizado.reserva.inmueble, titular: actualizado.reserva.titular,
       });
