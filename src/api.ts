@@ -9,12 +9,14 @@ if (!API_URL) {
 // rutaConFiltros('/reservas', { desde: '2026-11-10', hasta: '' }) → '/reservas?desde=2026-11-10'
 // Un booleano se manda solo si es true ("sinAsignar=true"). URLSearchParams codifica los caracteres especiales.
 export function rutaConFiltros(ruta: string, filtros: Record<string, string | boolean | null | undefined>) {
-  const query = new URLSearchParams();
-  for (const [clave, valor] of Object.entries(filtros)) {
-    if (valor) query.set(clave, String(valor));
+  const query = new URLSearchParams(); //Nativo api web standard
+  for (const [clave, valor] 
+    of Object.entries(filtros))  //Convierte el objeto en array de pares [clave, valor] para recorrerlo
+    {
+    if (valor) query.set(clave, String(valor)); //Si el valor es true o un string no vacío, lo agrega a la query. Los falsos, null y undefined se ignoran.
   }
-  const texto = query.toString();
-  return texto ? `${ruta}?${texto}` : ruta;
+  const texto = query.toString(); //Convierte la query en texto codificado para URL
+  return texto ? `${ruta}?${texto}` : ruta; //Si hay filtros, los agrega a la ruta con '?', sino devuelve la ruta sola.
 }
 
 // Uso: apiFetch<Usuario[]>('/usuarios') o apiFetch('/usuarios', { method: 'POST', body: JSON.stringify(datos) })
