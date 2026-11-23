@@ -8,7 +8,7 @@ import Form from 'react-bootstrap/Form';
 import ListGroup from 'react-bootstrap/ListGroup';
 import Row from 'react-bootstrap/Row';
 import Spinner from 'react-bootstrap/Spinner';
-import { apiFetch } from '../api';
+import { apiFetch, rutaConFiltros } from '../api';
 import { useFetch } from '../useFetch';
 import { formatearFecha, hoy } from '../formato';
 import type { FilaAgenda } from '../types';
@@ -25,11 +25,9 @@ export function Movimientos() {
   const [hasta, setHasta] = useState('');
   const [soloSinAsignar, setSoloSinAsignar] = useState(false);
 
-  const query = new URLSearchParams();
-  if (desde) query.set('desde', desde);
-  if (hasta) query.set('hasta', hasta);
-  if (soloSinAsignar) query.set('sinAsignar', 'true');
-  const { data: filas, loading, error, cargar, setData } = useFetch<FilaAgenda[]>(`/movimientos/agenda?${query}`);
+  const { data: filas, loading, error, cargar, setData } = useFetch<FilaAgenda[]>(
+    rutaConFiltros('/movimientos/agenda', { desde, hasta, sinAsignar: soloSinAsignar }),
+  );
   // Solo los de Operador y Supervisor, que son a quienes se puede asignar
   const operadores = useFetch<{ id: number; nombre: string }[]>('/usuarios/operadores');
 

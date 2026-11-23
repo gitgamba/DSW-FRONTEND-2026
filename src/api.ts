@@ -5,6 +5,18 @@ if (!API_URL) {
   throw new Error('Falta VITE_API_URL en el .env (copiá .env.example)');
 }
 
+// Arma la ruta con los filtros que tienen valor; los vacíos no se mandan.
+// rutaConFiltros('/reservas', { desde: '2026-11-10', hasta: '' }) → '/reservas?desde=2026-11-10'
+// Un booleano se manda solo si es true ("sinAsignar=true"). URLSearchParams codifica los caracteres especiales.
+export function rutaConFiltros(ruta: string, filtros: Record<string, string | boolean | null | undefined>) {
+  const query = new URLSearchParams();
+  for (const [clave, valor] of Object.entries(filtros)) {
+    if (valor) query.set(clave, String(valor));
+  }
+  const texto = query.toString();
+  return texto ? `${ruta}?${texto}` : ruta;
+}
+
 // Uso: apiFetch<Usuario[]>('/usuarios') o apiFetch('/usuarios', { method: 'POST', body: JSON.stringify(datos) })
 //Sin opciones, hace GET. Con body, hace POST. Con method, hace PUT o DELETE. Devuelve la respuesta parseada como JSON.
 export async function apiFetch<T>(ruta: string, opciones: RequestInit = {}): Promise<T> {
