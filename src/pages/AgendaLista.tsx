@@ -41,8 +41,8 @@ export function AgendaLista({ usuarioId }: { usuarioId: string }) {
     return <Alert variant="secondary">No hay check-ins ni check-outs en los próximos 7 días.</Alert>;
   }
 
-  // Las fechas distintas, en orden (la API ya manda las filas ordenadas por fecha y hora)
-  const dias = [...new Set(filas.map((f) => f.fecha))];
+  // Las fechas distintas, ordenadas acá sin depender del orden de la API ("AAAA-MM-DD" se ordena bien como texto)
+  const dias = [...new Set(filas.map((f) => f.fecha))].sort();
 
   return (
     <>
