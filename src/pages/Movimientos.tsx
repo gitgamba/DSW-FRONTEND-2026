@@ -8,7 +8,8 @@ import Form from 'react-bootstrap/Form';
 import ListGroup from 'react-bootstrap/ListGroup';
 import Row from 'react-bootstrap/Row';
 import Spinner from 'react-bootstrap/Spinner';
-import { apiFetch, rutaConFiltros } from '../api';
+import { apiFetch } from '../api';
+import { useAgenda } from '../useAgenda';
 import { useFetch } from '../useFetch';
 import { formatearFecha, hoy } from '../formato';
 import type { FilaAgenda } from '../types';
@@ -25,9 +26,7 @@ export function Movimientos() {
   const [hasta, setHasta] = useState('');
   const [soloSinAsignar, setSoloSinAsignar] = useState(false);
 
-  const { data: filas, loading, error, cargar, setData } = useFetch<FilaAgenda[]>(
-    rutaConFiltros('/movimientos/agenda', { desde, hasta, sinAsignar: soloSinAsignar }),
-  );
+  const { filas, loading, error, cargar, actualizarFila } = useAgenda({ desde, hasta, sinAsignar: soloSinAsignar });
   // Solo los de Operador y Supervisor, que son a quienes se puede asignar
   const operadores = useFetch<{ id: number; nombre: string }[]>('/usuarios/operadores');
 
@@ -36,11 +35,6 @@ export function Movimientos() {
   const [aviso, setAviso] = useState<string | null>(null);
   const [borrarId, setBorrarId] = useState<number | null>(null);
   const [filaNota, setFilaNota] = useState<FilaAgenda | null>(null); // la fila con el modal de nota abierto
-
-  // Reemplaza una fila de la lista por su versión nueva
-  const actualizarFila = (nueva: FilaAgenda) => {
-    setData(filas!.map((f) => (f.id === nueva.id ? nueva : f)));
-  };
 
   const handleAsignar = async (fila: FilaAgenda, valor: string) => {
     const usuarioId = valor === '' ? null : Number(valor); // "" = sacarle el operador

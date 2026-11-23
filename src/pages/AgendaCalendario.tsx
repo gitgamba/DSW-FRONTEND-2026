@@ -8,7 +8,7 @@ import '@fullcalendar/react/skeleton.css';
 import '@fullcalendar/react/themes/classic/theme.css';
 import '@fullcalendar/react/themes/classic/palette.css';
 import Alert from 'react-bootstrap/Alert';
-import { useFetch } from '../useFetch';
+import { useAgenda } from '../useAgenda';
 import type { FilaAgenda } from '../types';
 import { MovimientoModal } from './MovimientoModal';
 
@@ -22,10 +22,8 @@ function color(f: FilaAgenda) {
 export function AgendaCalendario({ usuarioId }: { usuarioId: string }) {
   // El rango que muestra el calendario: lo avisa FullCalendar con datesSet cada vez que se cambia de mes o semana
   const [rango, setRango] = useState<{ desde: string; hasta: string } | null>(null);
-  const filtroUsuario = usuarioId ? `&usuarioId=${usuarioId}` : '';
-  // Hasta que FullCalendar no avisa el rango, la ruta es null y no se pide nada
-  const ruta = rango ? `/movimientos/agenda?desde=${rango.desde}&hasta=${rango.hasta}${filtroUsuario}` : null;
-  const { data: filas, error, setData } = useFetch<FilaAgenda[]>(ruta);
+  // Hasta que FullCalendar no avisa el rango no se pide nada
+  const { filas, error, actualizarFila } = useAgenda(rango && { ...rango, usuarioId });
   const [seleccionada, setSeleccionada] = useState<FilaAgenda | null>(null);
 
   // Lo que necesita FullCalendar: id, título, inicio y color. La fila entera va en extendedProps para el modal.
@@ -38,7 +36,7 @@ export function AgendaCalendario({ usuarioId }: { usuarioId: string }) {
   }));
 
   const handleRealizado = (nueva: FilaAgenda) => {
-    setData(filas!.map((f) => (f.id === nueva.id ? nueva : f)));
+    actualizarFila(nueva);
     setSeleccionada(null);
   };
 

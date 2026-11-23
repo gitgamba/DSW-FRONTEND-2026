@@ -5,7 +5,7 @@ import Button from 'react-bootstrap/Button';
 import ListGroup from 'react-bootstrap/ListGroup';
 import Spinner from 'react-bootstrap/Spinner';
 import { useAuth } from '../AuthContext';
-import { useFetch } from '../useFetch';
+import { useAgenda } from '../useAgenda';
 import { diaConNombre, hoy, sumarDias } from '../formato';
 import type { FilaAgenda } from '../types';
 import { MovimientoModal } from './MovimientoModal';
@@ -17,15 +17,12 @@ export function AgendaLista({ usuarioId }: { usuarioId: string }) {
   const { rol } = useAuth();
   const desde = hoy();
   const hasta = sumarDias(desde, 6);
-  const filtroUsuario = usuarioId ? `&usuarioId=${usuarioId}` : '';
-  const { data: filas, loading, error, cargar, setData } = useFetch<FilaAgenda[]>(
-    `/movimientos/agenda?desde=${desde}&hasta=${hasta}${filtroUsuario}`,
-  );
+  const { filas, loading, error, cargar, actualizarFila } = useAgenda({ desde, hasta, usuarioId });
   const [seleccionada, setSeleccionada] = useState<FilaAgenda | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
 
   const handleRealizado = (nueva: FilaAgenda) => {
-    setData(filas!.map((f) => (f.id === nueva.id ? nueva : f)));
+    actualizarFila(nueva);
     setSeleccionada(null);
     setAviso('¡Listo! Quedó marcado como hecho.');
   };
