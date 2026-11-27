@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
-import { apiFetch } from '../api';
+import { api } from '../api';
 
 interface Props { movimientoId: number; onCerrar: () => void; onBorrado: () => void }
 
@@ -12,7 +12,7 @@ export function MovimientoBorrarModal({ movimientoId, onCerrar, onBorrado }: Pro
   const borrar = async () => {
     setBorrando(true); setError(null);
     try {
-      await apiFetch('/movimientos/' + movimientoId, { method: 'DELETE' });
+      await api.delete('/movimientos/' + movimientoId);
       onBorrado();
     } catch (err) { setError((err as Error).message); }
     finally { setBorrando(false); }

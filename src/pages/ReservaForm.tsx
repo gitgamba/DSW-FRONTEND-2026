@@ -6,7 +6,7 @@ import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import Row from 'react-bootstrap/Row';
 import Spinner from 'react-bootstrap/Spinner';
-import { apiFetch } from '../api';
+import { api } from '../api';
 import { useFetch } from '../useFetch';
 import { fechaParaInput } from '../formato';
 import type { Huesped, Inmueble, Reserva } from '../types';
@@ -98,8 +98,8 @@ export function ReservaForm({ reserva, onCerrar, onGuardado }: Props) {
     };
     try {
       const guardada = esEdicion
-        ? await apiFetch<Reserva>(`/reservas/${reserva.id}`, { method: 'PATCH', body: JSON.stringify(datos) })
-        : await apiFetch<Reserva>('/reservas', { method: 'POST', body: JSON.stringify(datos) });
+        ? await api.patch<Reserva>(`/reservas/${reserva.id}`, datos)
+        : await api.post<Reserva>('/reservas', datos);
       onGuardado(guardada);
     } catch (err) {
       setErrorApi((err as Error).message);

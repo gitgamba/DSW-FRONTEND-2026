@@ -6,7 +6,7 @@ import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import Row from 'react-bootstrap/Row';
 import Spinner from 'react-bootstrap/Spinner';
-import { apiFetch, rutaConFiltros } from '../api';
+import { api, rutaConFiltros } from '../api';
 import { formatearFecha } from '../formato';
 
 interface Resumen {
@@ -41,7 +41,7 @@ export function SincronizarModal({ onCerrar, onSincronizado }: Props) {
     setSincronizando(true);
     // Sin fechas, la API usa de hoy a dentro de 30 días
     try {
-      const r = await apiFetch<Resumen>(rutaConFiltros('/reservas/sincronizar', { desde, hasta }), { method: 'POST' });
+      const r = await api.post<Resumen>(rutaConFiltros('/reservas/sincronizar', { desde, hasta }));
       onSincronizado(
         `Sincronización del ${formatearFecha(r.desde)} al ${formatearFecha(r.hasta)}: ` +
           `${r.reservas} reservas actualizadas, ${r.canceladas} canceladas y ${r.ignoradas} ignoradas.`,

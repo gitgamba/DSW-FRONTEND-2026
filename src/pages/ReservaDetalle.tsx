@@ -10,7 +10,7 @@ import Modal from 'react-bootstrap/Modal';
 import Row from 'react-bootstrap/Row';
 import Spinner from 'react-bootstrap/Spinner';
 import Table from 'react-bootstrap/Table';
-import { apiFetch } from '../api';
+import { api } from '../api';
 import { useAuth } from '../AuthContext';
 import { useFetch } from '../useFetch';
 import { formatearFecha, formatearImporte } from '../formato';
@@ -48,7 +48,7 @@ export function ReservaDetalle() {
     setBorrando(true);
     setErrorBorrar(null);
     try {
-      await apiFetch(`/reservas/${id}`, { method: 'DELETE' });
+      await api.delete(`/reservas/${id}`);
       navigate('/reservas'); // la reserva ya no existe: no hay detalle que mostrar
     } catch (err) {
       setErrorBorrar((err as Error).message);

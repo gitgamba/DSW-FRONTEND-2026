@@ -4,7 +4,7 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Spinner from 'react-bootstrap/Spinner';
 import Table from 'react-bootstrap/Table';
-import { apiFetch } from '../api';
+import { api } from '../api';
 import { useFetch } from '../useFetch';
 import type { Huesped } from '../types';
 import { HuespedForm } from './HuespedForm';
@@ -24,7 +24,7 @@ export function Huespedes() {
     setProcesando(true);
     try {
       // Se consulta el detalle actualizado antes de editarlo.
-      setEditando(await apiFetch<Huesped>('/huespedes/' + fila.id));
+      setEditando(await api.get<Huesped>('/huespedes/' + fila.id));
       setMostrar(true);
     } catch (err) { setErrorAccion((err as Error).message); }
     finally { setProcesando(false); }
@@ -36,7 +36,7 @@ export function Huespedes() {
     if (!aBorrar) return;
     setProcesando(true); setErrorAccion(null);
     try {
-      await apiFetch('/huespedes/' + aBorrar.id, { method: 'DELETE' });
+      await api.delete('/huespedes/' + aBorrar.id);
       setABorrar(null); setAviso('Se borró el huésped.'); cargar();
     } catch (err) { setErrorAccion((err as Error).message); }
     finally { setProcesando(false); }

@@ -4,7 +4,7 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Spinner from 'react-bootstrap/Spinner';
 import Table from 'react-bootstrap/Table';
-import { apiFetch } from '../api';
+import { api } from '../api';
 import { useAuth } from '../AuthContext';
 import { useFetch } from '../useFetch';
 import type { TipoUsuario, Usuario } from '../types';
@@ -44,7 +44,7 @@ export function Usuarios() {
     setBorrando(true);
     setErrorBorrar(null);
     try {
-      await apiFetch(`/usuarios/${aBorrar.id}`, { method: 'DELETE' });
+      await api.delete(`/usuarios/${aBorrar.id}`);
       setAviso(`Se borró el usuario ${aBorrar.nombre}.`);
       cerrarBorrado();
       cargar();

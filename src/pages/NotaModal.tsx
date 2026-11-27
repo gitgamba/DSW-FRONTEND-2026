@@ -4,7 +4,7 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import Spinner from 'react-bootstrap/Spinner';
-import { apiFetch } from '../api';
+import { api } from '../api';
 
 interface Props {
   movimientoId: number;
@@ -28,7 +28,7 @@ export function NotaModal({ movimientoId, titulo, descripcion, onCerrar, onGuard
     setGuardando(true);
     const nueva = texto.trim() === '' ? null : texto.trim(); // vacía = borrar la nota
     try {
-      await apiFetch(`/movimientos/${movimientoId}`, { method: 'PATCH', body: JSON.stringify({ descripcion: nueva }) });
+      await api.patch(`/movimientos/${movimientoId}`, { descripcion: nueva });
       onGuardado(nueva);
     } catch (err) {
       setError((err as Error).message);

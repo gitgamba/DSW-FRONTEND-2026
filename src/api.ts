@@ -11,30 +11,33 @@ if (!API_URL) {
 // rutaConFiltros('/reservas', { desde: '2026-11-10', hasta: '' }) → '/reservas?desde=2026-11-10'
 // Un booleano se manda solo si es true ("sinAsignar=true"). URLSearchParams codifica los caracteres especiales.
 export function rutaConFiltros(ruta: string, filtros: Record<string, string | boolean | null | undefined>) {
-  const query = new URLSearchParams(); //Nativo api web standard
-  for (const [clave, valor] 
-    of Object.entries(filtros))  //Convierte el objeto en array de pares [clave, valor] para recorrerlo
-    {
-    if (valor) query.set(clave, String(valor)); //Si el valor es true o un string no vacío, lo agrega a la query. Los falsos, null y undefined se ignoran.
+  const query = new URLSearchParams();
+  for (const [clave, valor] of Object.entries(filtros)) {
+    if (valor) query.set(clave, String(valor));
   }
-  const texto = query.toString(); //Convierte la query en texto codificado para URL
-  return texto ? `${ruta}?${texto}` : ruta; //Si hay filtros, los agrega a la ruta con '?', sino devuelve la ruta sola.
+  const texto = query.toString();
+  return texto ? `${ruta}?${texto}` : ruta;
 }
 
-// Uso: apiFetch<Usuario[]>('/usuarios') o apiFetch('/usuarios', { method: 'POST', body: JSON.stringify(datos) })
-//Sin opciones, hace GET. Con body, hace POST. Con method, hace PUT o DELETE. Devuelve la respuesta parseada como JSON.
-export async function apiFetch<T>(ruta: string, opciones: RequestInit = {}): Promise<T> {
+export const api = {
+  get: <T>(ruta: string) => apiFetch<T>(ruta, 'GET'),
+  post: <T = void>(ruta: string, datos?: object) => apiFetch<T>(ruta, 'POST', datos),
+  put: <T = void>(ruta: string, datos: object) => apiFetch<T>(ruta, 'PUT', datos),
+  patch: <T = void>(ruta: string, datos?: object) => apiFetch<T>(ruta, 'PATCH', datos),
+  delete: (ruta: string) => apiFetch<void>(ruta, 'DELETE'),
+};
+
+async function apiFetch<T>(ruta: string, method: string, datos?: object): Promise<T> {
   const token = obtenerToken();
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' }; 
-  //objeto id/valor string para pasarle a fetch. Content-Type es para que la API sepa que el body es JSON.
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (token) {
     headers.Authorization = `Bearer ${token}`;
-  } //Envio el token en el header Authorization para que la API sepa quién soy y si tengo permiso.
+  }
+  const body = datos === undefined ? undefined : JSON.stringify(datos);
 
   let respuesta: Response;
   try {
-    respuesta = await fetch(API_URL + ruta, { ...opciones, headers });
-    //copia lo que mando, quien llamo y agrega los headers. Valida el backend
+    respuesta = await fetch(API_URL + ruta, { method, headers, body });
   } catch {
     // fetch solo falla así cuando no llega al servidor (sin red, back apagado, CORS)
     throw new Error('No se pudo conectar con el servidor. Revisá tu conexión y probá de nuevo.');
@@ -44,7 +47,7 @@ export async function apiFetch<T>(ruta: string, opciones: RequestInit = {}): Pro
   // (Sin token, el 401 es el del login con credenciales incorrectas y se muestra como cualquier error.)
   if (respuesta.status === 401 && token) {
     borrarSesion();
-    window.location.assign('/login?vencida=1'); //Fuerza reinicio de react
+    window.location.assign('/login?vencida=1');
     throw new Error('Tu sesión venció. Volvé a iniciar sesión.');
   }
 
@@ -53,12 +56,11 @@ export async function apiFetch<T>(ruta: string, opciones: RequestInit = {}): Pro
     return undefined as T;
   }
 
-//
-  const datos = await respuesta.json().catch(() => null);
+  const contenido = await respuesta.json().catch(() => null);
   if (!respuesta.ok) {
-    throw new Error(mensajeDeError(respuesta.status, datos));
+    throw new Error(mensajeDeError(respuesta.status, contenido));
   }
-  return datos as T;
+  return contenido as T;
 }
 
 // La API responde los errores como { error, detalle? }; detalle es la lista de campos inválidos

@@ -4,7 +4,7 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Spinner from 'react-bootstrap/Spinner';
 import Table from 'react-bootstrap/Table';
-import { apiFetch } from '../api';
+import { api } from '../api';
 import { useFetch } from '../useFetch';
 import type { Inmueble } from '../types';
 import { InmuebleForm } from './InmuebleForm';
@@ -24,7 +24,7 @@ export function Inmuebles() {
     setProcesando(true);
     try {
       // Se consulta el detalle actualizado antes de editarlo.
-      setEditando(await apiFetch<Inmueble>('/inmuebles/' + fila.id));
+      setEditando(await api.get<Inmueble>('/inmuebles/' + fila.id));
       setMostrar(true);
     } catch (err) { setErrorAccion((err as Error).message); }
     finally { setProcesando(false); }
@@ -36,7 +36,7 @@ export function Inmuebles() {
     if (!aBorrar) return;
     setProcesando(true); setErrorAccion(null);
     try {
-      await apiFetch('/inmuebles/' + aBorrar.id, { method: 'DELETE' });
+      await api.delete('/inmuebles/' + aBorrar.id);
       setABorrar(null); setAviso('Se borró el inmueble.'); cargar();
     } catch (err) { setErrorAccion((err as Error).message); }
     finally { setProcesando(false); }

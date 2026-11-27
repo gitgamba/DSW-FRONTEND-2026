@@ -5,7 +5,7 @@ import Badge from 'react-bootstrap/Badge';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Spinner from 'react-bootstrap/Spinner';
-import { apiFetch } from '../api';
+import { api } from '../api';
 import { useAuth } from '../AuthContext';
 import { useFetch } from '../useFetch';
 import { fechaParaInput, formatearFecha } from '../formato';
@@ -22,7 +22,7 @@ export function MovimientoModal({ fila, onCerrar, onRealizado }: Props) {
     if (!movimiento) return;
     setGuardando(true); setErrorGuardar(null);
     try {
-      const actualizado = await apiFetch<MovimientoDetalle>('/movimientos/' + movimiento.id + '/realizado', { method: 'PATCH', body: '{}' });
+      const actualizado = await api.patch<MovimientoDetalle>('/movimientos/' + movimiento.id + '/realizado', {});
       const esEntrada = actualizado.tipo === 'CHECK_IN';
       onRealizado({
         ...fila, estado: actualizado.estado, descripcion: actualizado.descripcion, usuario: actualizado.usuario,

@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
-import { apiFetch } from './api';
+import { api } from './api';
 import { borrarSesion, guardarSesion, leerSesion } from './sesion';
 import type { Rol, Usuario } from './types';
 
@@ -17,10 +17,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [sesion, setSesion] = useState(leerSesion);
 
   const login = async (nombre: string, password: string) => {
-    const datos = await apiFetch<{ token: string; usuario: Usuario }>('/auth/login', { //apiFetch es wrapper de fetch que maneja token y errores
-      method: 'POST', //Post por envio de credenciales
-      body: JSON.stringify({ nombre, password }), //Se pasa a texto para ser usado por HTTP
-    });
+    const datos = await api.post<{ token: string; usuario: Usuario }>('/auth/login', { nombre, password });
     guardarSesion(datos);
     setSesion(datos); //Actualiza estado y dispara re-render de todos los componentes que usan useAuth()
   };

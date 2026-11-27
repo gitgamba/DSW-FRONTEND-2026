@@ -3,7 +3,7 @@ import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
-import { apiFetch } from '../api';
+import { api } from '../api';
 import type { Movimiento } from '../types';
 
 interface Props {
@@ -25,7 +25,7 @@ export function MovimientoAltaModal({ reservaId, disponibles, onCerrar, onGuarda
     }
     setGuardando(true);
     try {
-      await apiFetch('/movimientos', { method: 'POST', body: JSON.stringify({ reservaId, tipo, descripcion: descripcion.trim() || null }) });
+      await api.post('/movimientos', { reservaId, tipo, descripcion: descripcion.trim() || null });
       onGuardado();
     } catch (err) { setError((err as Error).message); }
     finally { setGuardando(false); }

@@ -4,7 +4,7 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Spinner from 'react-bootstrap/Spinner';
 import Table from 'react-bootstrap/Table';
-import { apiFetch } from '../api';
+import { api } from '../api';
 import { useFetch } from '../useFetch';
 import type { TipoUsuario } from '../types';
 import { TipoUsuarioForm } from './TipoUsuarioForm';
@@ -25,7 +25,7 @@ export function TiposUsuario() {
     setProcesando(true);
     try {
       // Se consulta el detalle actualizado antes de editarlo.
-      setEditando(await apiFetch<TipoUsuario>('/tipos-usuario/' + fila.id));
+      setEditando(await api.get<TipoUsuario>('/tipos-usuario/' + fila.id));
       setMostrar(true);
     } catch (err) { setErrorAccion((err as Error).message); }
     finally { setProcesando(false); }
@@ -37,7 +37,7 @@ export function TiposUsuario() {
     if (!aBorrar) return;
     setProcesando(true); setErrorAccion(null);
     try {
-      await apiFetch('/tipos-usuario/' + aBorrar.id, { method: 'DELETE' });
+      await api.delete('/tipos-usuario/' + aBorrar.id);
       setABorrar(null); setAviso('Se borró el tipo de usuario.'); cargar();
     } catch (err) { setErrorAccion((err as Error).message); }
     finally { setProcesando(false); }

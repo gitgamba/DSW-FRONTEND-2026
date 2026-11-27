@@ -5,7 +5,7 @@ import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
-import { apiFetch } from '../api';
+import { api } from '../api';
 import { useAuth } from '../AuthContext';
 import type { Notificacion, Rol } from '../types';
 
@@ -29,7 +29,7 @@ export function Layout() {
 
   const contarNoLeidas = async () => {
     try {
-      const lista = await apiFetch<Notificacion[]>('/notificaciones/mias?noLeidas=true');
+      const lista = await api.get<Notificacion[]>('/notificaciones/mias?noLeidas=true');
       setNoLeidas(lista.length);
     } catch {
       // Si falla, el contador no es crítico: queda el número anterior y cada pantalla muestra sus propios errores

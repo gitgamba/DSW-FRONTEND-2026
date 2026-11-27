@@ -5,7 +5,7 @@ import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import Row from 'react-bootstrap/Row';
-import { apiFetch } from '../api';
+import { api } from '../api';
 import type { Huesped } from '../types';
 
 interface Props { registro: Huesped | null; onCerrar: () => void; onGuardado: () => void }
@@ -49,9 +49,11 @@ export function HuespedForm({ registro, onCerrar, onGuardado }: Props) {
         email: campos.email.trim() || null,
         confirmoInicio: campos.confirmoInicio, confirmoFin: campos.confirmoFin,
       };
-      await apiFetch('/huespedes' + (registro ? '/' + registro.id : ''), {
-        method: registro ? 'PATCH' : 'POST', body: JSON.stringify(datos),
-      });
+      if (registro) {
+        await api.patch('/huespedes/' + registro.id, datos);
+      } else {
+        await api.post('/huespedes', datos);
+      }
       onGuardado();
     } catch (err) { setErrorApi((err as Error).message); }
     finally { setGuardando(false); }

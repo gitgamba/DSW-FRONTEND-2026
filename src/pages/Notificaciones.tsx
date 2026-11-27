@@ -5,7 +5,7 @@ import Badge from 'react-bootstrap/Badge';
 import Button from 'react-bootstrap/Button';
 import ListGroup from 'react-bootstrap/ListGroup';
 import Spinner from 'react-bootstrap/Spinner';
-import { apiFetch } from '../api';
+import { api } from '../api';
 import { useFetch } from '../useFetch';
 import { formatearFecha } from '../formato';
 import type { Notificacion } from '../types';
@@ -25,7 +25,7 @@ export function Notificaciones() {
   const handleAbrir = async (n: Notificacion) => {
     if (!n.leida) {
       try {
-        await apiFetch(`/notificaciones/${n.id}/leida`, { method: 'PATCH' });
+        await api.patch(`/notificaciones/${n.id}/leida`);
       } catch (err) {
         setErrorMarcar((err as Error).message);
         return; // nos quedamos acá para que se vea el error
@@ -39,7 +39,7 @@ export function Notificaciones() {
     setMarcando(true);
     setErrorMarcar(null);
     try {
-      await Promise.all(noLeidas.map((n) => apiFetch(`/notificaciones/${n.id}/leida`, { method: 'PATCH' })));
+      await Promise.all(noLeidas.map((n) => api.patch(`/notificaciones/${n.id}/leida`)));
       setData(notificaciones!.map((n) => ({ ...n, leida: true })));
     } catch (err) {
       setErrorMarcar((err as Error).message);

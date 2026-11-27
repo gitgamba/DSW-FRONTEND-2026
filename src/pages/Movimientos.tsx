@@ -8,7 +8,7 @@ import Form from 'react-bootstrap/Form';
 import ListGroup from 'react-bootstrap/ListGroup';
 import Row from 'react-bootstrap/Row';
 import Spinner from 'react-bootstrap/Spinner';
-import { apiFetch } from '../api';
+import { api } from '../api';
 import { useAgenda } from '../useAgenda';
 import { useFetch } from '../useFetch';
 import { formatearFecha, hoy } from '../formato';
@@ -42,7 +42,7 @@ export function Movimientos() {
     setErrorGuardar(null);
     setAviso(null);
     try {
-      await apiFetch(`/movimientos/${fila.id}/asignar`, { method: 'PATCH', body: JSON.stringify({ usuarioId }) });
+      await api.patch(`/movimientos/${fila.id}/asignar`, { usuarioId });
       const usuario = operadores.data?.find((o) => o.id === usuarioId) ?? null;
       // Con el filtro activo, la fila ya no corresponde a la lista: se vuelve a pedir
       if (soloSinAsignar) cargar();

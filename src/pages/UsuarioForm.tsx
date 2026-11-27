@@ -4,7 +4,7 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import Spinner from 'react-bootstrap/Spinner';
-import { apiFetch } from '../api';
+import { api } from '../api';
 import type { TipoUsuario, Usuario } from '../types';
 
 interface Props {
@@ -58,10 +58,10 @@ export function UsuarioForm({ usuario, tipos, onCerrar, onGuardado }: Props) {
         password: password || undefined, // undefined no viaja en el JSON
       };
       if (esEdicion) {
-        await apiFetch(`/usuarios/${usuario.id}`, { method: 'PATCH', body: JSON.stringify(datos) });
+        await api.patch(`/usuarios/${usuario.id}`, datos);
         onGuardado(`Se guardaron los cambios de ${datos.nombre}.`);
       } else {
-        await apiFetch('/usuarios', { method: 'POST', body: JSON.stringify(datos) });
+        await api.post('/usuarios', datos);
         onGuardado(`Se creó el usuario ${datos.nombre}.`);
       }
     } catch (err) {
