@@ -1,3 +1,5 @@
+import { borrarSesion, obtenerToken } from './sesion';
+
 // Todas las llamadas a la API pasan por acá: así el token y los errores se manejan en un solo lugar.
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -22,7 +24,7 @@ export function rutaConFiltros(ruta: string, filtros: Record<string, string | bo
 // Uso: apiFetch<Usuario[]>('/usuarios') o apiFetch('/usuarios', { method: 'POST', body: JSON.stringify(datos) })
 //Sin opciones, hace GET. Con body, hace POST. Con method, hace PUT o DELETE. Devuelve la respuesta parseada como JSON.
 export async function apiFetch<T>(ruta: string, opciones: RequestInit = {}): Promise<T> {
-  const token = localStorage.getItem('token');
+  const token = obtenerToken();
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }; 
   //objeto id/valor string para pasarle a fetch. Content-Type es para que la API sepa que el body es JSON.
   if (token) {
@@ -41,8 +43,7 @@ export async function apiFetch<T>(ruta: string, opciones: RequestInit = {}): Pro
   // Con token y 401: venció o es inválido. Se borra la sesión y se recarga en el login.
   // (Sin token, el 401 es el del login con credenciales incorrectas y se muestra como cualquier error.)
   if (respuesta.status === 401 && token) {
-    localStorage.removeItem('token');
-    localStorage.removeItem('usuario');
+    borrarSesion();
     window.location.assign('/login?vencida=1'); //Fuerza reinicio de react
     throw new Error('Tu sesión venció. Volvé a iniciar sesión.');
   }
