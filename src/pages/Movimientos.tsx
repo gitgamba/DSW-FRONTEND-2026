@@ -154,7 +154,17 @@ export function Movimientos() {
         </ListGroup>
       )}
 
-      {borrarId !== null && <MovimientoBorrarModal movimientoId={borrarId} onCerrar={() => setBorrarId(null)} onBorrado={() => { setBorrarId(null); setAviso('Se borró el movimiento.'); cargar(); }} />}
+      {borrarId !== null && (
+        <MovimientoBorrarModal
+          onCerrar={() => setBorrarId(null)}
+          onConfirmar={async () => {
+            await api.delete('/movimientos/' + borrarId);
+            setBorrarId(null);
+            setAviso('Se borró el movimiento.');
+            cargar();
+          }}
+        />
+      )}
       {filaNota && (
         <NotaModal
           movimientoId={filaNota.id}

@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/Button';
-import Modal from 'react-bootstrap/Modal';
 import Spinner from 'react-bootstrap/Spinner';
 import Table from 'react-bootstrap/Table';
 import { api } from '../api';
+import { ConfirmarBorrado } from '../components/ConfirmarBorrado';
 import { useFetch } from '../useFetch';
 import type { TipoUsuario } from '../types';
 import { TipoUsuarioForm } from './TipoUsuarioForm';
@@ -33,14 +33,11 @@ export function TiposUsuario() {
   const guardar = () => {
     setMostrar(false); setAviso('Se guardaron los cambios.'); cargar();
   };
-  const borrar = async () => {
-    if (!aBorrar) return;
-    setProcesando(true); setErrorAccion(null);
-    try {
-      await api.delete('/tipos-usuario/' + aBorrar.id);
-      setABorrar(null); setAviso('Se borró el tipo de usuario.'); cargar();
-    } catch (err) { setErrorAccion((err as Error).message); }
-    finally { setProcesando(false); }
+  const borrar = async (id: number) => {
+    await api.delete('/tipos-usuario/' + id);
+    setABorrar(null);
+    setAviso('Se borró el tipo de usuario.');
+    cargar();
   };
   return <>
     <div className="d-flex flex-column flex-sm-row justify-content-between gap-2 mb-3">
@@ -49,7 +46,7 @@ export function TiposUsuario() {
     </div>
     <Alert variant="info">El nombre identifica el puesto. El rol base determina sus permisos. Cambiarlo afecta a todos los usuarios del tipo cuando vuelvan a iniciar sesión.</Alert>
     {aviso && <Alert variant="success" dismissible onClose={() => setAviso(null)}>{aviso}</Alert>}
-    {errorAccion && !aBorrar && <Alert variant="danger">{errorAccion}</Alert>}
+    {errorAccion && <Alert variant="danger">{errorAccion}</Alert>}
     {error && <Alert variant="danger">{error} <Button onClick={cargar} variant="outline-danger">Reintentar</Button></Alert>}
     {loading ? <div className="text-center py-4"><Spinner /><p>Cargando...</p></div> : data?.length === 0 ?
       <Alert variant="secondary">No hay registros para mostrar.</Alert> : data && <Table responsive striped className="align-middle">
@@ -59,13 +56,10 @@ export function TiposUsuario() {
         <Button size="sm" variant="outline-danger" disabled={procesando} onClick={() => { setErrorAccion(null); setABorrar(fila); }}>Borrar</Button>
       </td></tr>)}</tbody></Table>}
     {mostrar && <TipoUsuarioForm registro={editando} onCerrar={() => setMostrar(false)} onGuardado={guardar} />}
-    <Modal show={aBorrar !== null} onHide={() => !procesando && setABorrar(null)} centered backdrop={procesando ? 'static' : true}>
-      <Modal.Header closeButton={!procesando}><Modal.Title>Borrar tipo de usuario</Modal.Title></Modal.Header>
-      <Modal.Body>{errorAccion && <Alert variant="danger">{errorAccion}</Alert>}
+    {aBorrar && (
+      <ConfirmarBorrado titulo="Borrar tipo de usuario" onCerrar={() => setABorrar(null)} onConfirmar={() => borrar(aBorrar.id)}>
         ¿Querés borrar este tipo de usuario? Solo se puede borrar si no tiene usuarios asociados.
-      </Modal.Body>
-      <Modal.Footer><Button variant="secondary" disabled={procesando} onClick={() => setABorrar(null)}>Cancelar</Button>
-        <Button variant="danger" disabled={procesando} onClick={borrar}>{procesando ? 'Borrando...' : 'Confirmar borrado'}</Button></Modal.Footer>
-    </Modal>
+      </ConfirmarBorrado>
+    )}
   </>;
 }
