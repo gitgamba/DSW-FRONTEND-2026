@@ -8,7 +8,7 @@ import '@fullcalendar/react/skeleton.css';
 import '@fullcalendar/react/themes/classic/theme.css';
 import '@fullcalendar/react/themes/classic/palette.css';
 import Alert from 'react-bootstrap/Alert';
-import { aFechaISO, ZONA_ARGENTINA } from '../formato';
+import { aFechaISO, sumarDias, ZONA_ARGENTINA } from '../formato';
 import { useAgenda } from '../useAgenda';
 import type { FilaAgenda } from '../types';
 import { MovimientoModal } from './MovimientoModal';
@@ -47,13 +47,16 @@ export function AgendaCalendario({ usuarioId }: { usuarioId: string }) {
       <FullCalendar
         plugins={[dayGridPlugin, timeGridPlugin, classicThemePlugin]}
         locale={esLocale}
+        timeZone={ZONA_ARGENTINA}
         initialView="dayGridMonth"
         headerToolbar={{ start: 'prev,next today', center: 'title', end: 'dayGridMonth,timeGridWeek' }}
         height="auto"
         events={eventos}
-        // start/end son medianoche en Argentina; se pasan a "AAAA-MM-DD" para la API.
-        // end es el día siguiente al último que se ve; traer un día de más no molesta.
-        datesSet={(info) => setRango({ desde: aFechaISO(info.start, ZONA_ARGENTINA), hasta: aFechaISO(info.end, ZONA_ARGENTINA) })}
+        // FullCalendar excluye end y la API incluye hasta.
+        datesSet={(info) => setRango({
+          desde: aFechaISO(info.start, ZONA_ARGENTINA),
+          hasta: sumarDias(aFechaISO(info.end, ZONA_ARGENTINA), -1),
+        })}
         eventClick={(info) => setSeleccionada(info.event.extendedProps.fila as FilaAgenda)}
       />
 
