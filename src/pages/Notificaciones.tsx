@@ -15,7 +15,7 @@ export function Notificaciones() {
   const navigate = useNavigate();
   // Lo que el Layout le pasa por <Outlet context>: para que el contador del Navbar se entere al marcar todas
   const { contarNoLeidas } = useOutletContext<{ contarNoLeidas: () => void }>();
-  const { data: notificaciones, loading, error, cargar, setData } = useFetch<Notificacion[]>('/notificaciones/mias');
+  const { data: notificaciones, loading, error, cargar } = useFetch<Notificacion[]>('/notificaciones/mias');
   const [marcando, setMarcando] = useState(false);
   const [errorMarcar, setErrorMarcar] = useState<string | null>(null);
 
@@ -34,17 +34,15 @@ export function Notificaciones() {
     navigate('/agenda');
   };
 
-  // La API marca de a una: se manda un pedido por cada no leída, todos a la vez (Promise.all)
   const handleMarcarTodas = async () => {
     setMarcando(true);
     setErrorMarcar(null);
     try {
-      await Promise.all(noLeidas.map((n) => api.patch(`/notificaciones/${n.id}/leida`)));
-      setData(notificaciones!.map((n) => ({ ...n, leida: true })));
+      await api.patch('/notificaciones/mias/leidas', { ids: noLeidas.map((n) => n.id) });
     } catch (err) {
       setErrorMarcar((err as Error).message);
-      cargar(); // si alguna falló, se vuelve a pedir la lista para ver cuáles quedaron
     } finally {
+      await cargar();
       setMarcando(false);
       contarNoLeidas();
     }
@@ -77,6 +75,7 @@ export function Notificaciones() {
             <ListGroup.Item
               key={n.id}
               action
+              disabled={marcando}
               onClick={() => handleAbrir(n)}
               variant={n.leida ? undefined : 'primary'}
               className="d-flex gap-2 align-items-start"
