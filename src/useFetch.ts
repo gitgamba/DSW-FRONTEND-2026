@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { apiFetch } from './api';
+import { api } from './api';
 
-// El useFetch del curso, pero usando apiFetch (token y errores amigables)
+// Usa el cliente de la API para el token y los errores.
 // y devolviendo cargar() para volver a pedir los datos después de un alta, edición o baja.
 // Con ruta null no pide nada (por ejemplo, mientras todavía no se sabe qué rango pedir).
 export function useFetch<T>(ruta: string | null) {  
@@ -14,7 +14,7 @@ export function useFetch<T>(ruta: string | null) {
     setLoading(true); //Spinner
     setError(null); //Reinicio de error, si hubo uno previo.
     try {
-      setData(await apiFetch<T>(ruta)); //pide y guarda
+      setData(await api.get<T>(ruta)); //pide y guarda
     } catch (err) {
       setData(null); // Un error al recargar no debe dejar datos anteriores visibles.
       setError((err as Error).message);

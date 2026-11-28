@@ -5,10 +5,25 @@ import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import Row from 'react-bootstrap/Row';
-import { apiFetch } from '../api';
+import { z } from 'zod';
+import { api } from '../api';
 import type { Huesped } from '../types';
 
 interface Props { registro: Huesped | null; onCerrar: () => void; onGuardado: () => void }
+
+const huespedFormSchema = z.object({
+  staysId: z.string().trim().min(1, 'Es obligatorio.').max(50, 'Como máximo 50 caracteres.'),
+  apellido: z.string().trim().min(1, 'Es obligatorio.').max(100, 'Como máximo 100 caracteres.'),
+  nombres: z.string().trim().min(1, 'Es obligatorio.').max(100, 'Como máximo 100 caracteres.'),
+  dni: z.string().trim().max(20, 'Como máximo 20 caracteres.').transform((valor) => valor || null),
+  nacionalidad: z.string().trim().max(50, 'Como máximo 50 caracteres.').transform((valor) => valor || null),
+  telefono: z.string().trim().max(30, 'Como máximo 30 caracteres.').transform((valor) => valor || null),
+  email: z.string().trim().max(100, 'Como máximo 100 caracteres.')
+    .transform((valor) => valor || null)
+    .pipe(z.email('Ingresá un email válido.').nullable()),
+  confirmoInicio: z.boolean(),
+  confirmoFin: z.boolean(),
+});
 
 export function HuespedForm({ registro, onCerrar, onGuardado }: Props) {
   const [campos, setCampos] = useState({
@@ -25,33 +40,22 @@ export function HuespedForm({ registro, onCerrar, onGuardado }: Props) {
   const [errorApi, setErrorApi] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
   const guardar = async (evento: SubmitEvent) => {
-    evento.preventDefault(); setErrorApi(null);
-    const e: Record<string, string> = {};
-    if (!campos.staysId.trim() || campos.staysId.trim().length > 50) e.staysId = 'Es obligatorio. Como máximo 50 caracteres.';
-    if (!campos.apellido.trim() || campos.apellido.trim().length > 100) e.apellido = 'Es obligatorio. Como máximo 100 caracteres.';
-    if (!campos.nombres.trim() || campos.nombres.trim().length > 100) e.nombres = 'Es obligatorio. Como máximo 100 caracteres.';
-    if (campos.dni.trim().length > 20) e.dni = 'Como máximo 20 caracteres.';
-    if (campos.nacionalidad.trim().length > 50) e.nacionalidad = 'Como máximo 50 caracteres.';
-    if (campos.telefono.trim().length > 30) e.telefono = 'Como máximo 30 caracteres.';
-    if (campos.email.trim().length > 100) e.email = 'Como máximo 100 caracteres.';
-    if (campos.email.trim() && !/^(?:[A-Za-z0-9_'+\-]+\.)*[A-Za-z0-9_'+\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$/.test(campos.email.trim())) e.email = 'Ingresá un email válido.';
-    setErrores(e);
-    if (Object.keys(e).length) return;
+    evento.preventDefault();
+    setErrorApi(null);
+    const resultado = huespedFormSchema.safeParse(campos);
+    if (!resultado.success) {
+      const erroresPorCampo = z.flattenError(resultado.error).fieldErrors;
+      setErrores(Object.fromEntries(Object.entries(erroresPorCampo).map(([campo, mensajes]) => [campo, mensajes[0]])));
+      return;
+    }
+    setErrores({});
     setGuardando(true);
     try {
-      const datos = {
-        staysId: campos.staysId.trim(),
-        apellido: campos.apellido.trim(),
-        nombres: campos.nombres.trim(),
-        dni: campos.dni.trim() || null,
-        nacionalidad: campos.nacionalidad.trim() || null,
-        telefono: campos.telefono.trim() || null,
-        email: campos.email.trim() || null,
-        confirmoInicio: campos.confirmoInicio, confirmoFin: campos.confirmoFin,
-      };
-      await apiFetch('/huespedes' + (registro ? '/' + registro.id : ''), {
-        method: registro ? 'PATCH' : 'POST', body: JSON.stringify(datos),
-      });
+      if (registro) {
+        await api.patch('/huespedes/' + registro.id, resultado.data);
+      } else {
+        await api.post('/huespedes', resultado.data);
+      }
       onGuardado();
     } catch (err) { setErrorApi((err as Error).message); }
     finally { setGuardando(false); }

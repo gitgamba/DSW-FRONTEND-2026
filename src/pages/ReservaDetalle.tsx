@@ -6,12 +6,12 @@ import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
 import Col from 'react-bootstrap/Col';
 import ListGroup from 'react-bootstrap/ListGroup';
-import Modal from 'react-bootstrap/Modal';
 import Row from 'react-bootstrap/Row';
 import Spinner from 'react-bootstrap/Spinner';
 import Table from 'react-bootstrap/Table';
-import { apiFetch } from '../api';
+import { api } from '../api';
 import { useAuth } from '../AuthContext';
+import { ConfirmarBorrado } from '../components/ConfirmarBorrado';
 import { useFetch } from '../useFetch';
 import { formatearFecha, formatearImporte } from '../formato';
 import type { Movimiento, Reserva } from '../types';
@@ -34,8 +34,6 @@ export function ReservaDetalle() {
 
   const [mostrarEdicion, setMostrarEdicion] = useState(false);
   const [mostrarBorrado, setMostrarBorrado] = useState(false);
-  const [borrando, setBorrando] = useState(false);
-  const [errorBorrar, setErrorBorrar] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
 
   const handleGuardado = () => {
@@ -45,15 +43,8 @@ export function ReservaDetalle() {
   };
 
   const handleBorrar = async () => {
-    setBorrando(true);
-    setErrorBorrar(null);
-    try {
-      await apiFetch(`/reservas/${id}`, { method: 'DELETE' });
-      navigate('/reservas'); // la reserva ya no existe: no hay detalle que mostrar
-    } catch (err) {
-      setErrorBorrar((err as Error).message);
-      setBorrando(false);
-    }
+    await api.delete(`/reservas/${id}`);
+    navigate('/reservas'); // la reserva ya no existe: no hay detalle que mostrar
   };
 
   // navigate(-1) es el "Atrás" del navegador: vuelve al listado con los filtros que tenía
@@ -160,27 +151,27 @@ export function ReservaDetalle() {
       </Row>
 
       {mostrarAltaMovimiento && <MovimientoAltaModal reservaId={reserva.id} disponibles={disponibles} onCerrar={() => setMostrarAltaMovimiento(false)} onGuardado={() => { setMostrarAltaMovimiento(false); setAviso('Se creó el movimiento.'); cargar(); }} />}
-      {borrarMovimientoId !== null && <MovimientoBorrarModal movimientoId={borrarMovimientoId} onCerrar={() => setBorrarMovimientoId(null)} onBorrado={() => { setBorrarMovimientoId(null); setAviso('Se borró el movimiento.'); cargar(); }} />}
+      {borrarMovimientoId !== null && (
+        <MovimientoBorrarModal
+          onCerrar={() => setBorrarMovimientoId(null)}
+          onConfirmar={async () => {
+            await api.delete('/movimientos/' + borrarMovimientoId);
+            setBorrarMovimientoId(null);
+            setAviso('Se borró el movimiento.');
+            cargar();
+          }}
+        />
+      )}
       {mostrarEdicion && (
         <ReservaForm reserva={reserva} onCerrar={() => setMostrarEdicion(false)} onGuardado={handleGuardado} />
       )}
 
-      <Modal show={mostrarBorrado} onHide={() => setMostrarBorrado(false)} centered backdrop={borrando ? 'static' : true}>
-        <Modal.Header closeButton={!borrando}>
-          <Modal.Title>Borrar reserva</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {errorBorrar && <Alert variant="danger">{errorBorrar}</Alert>}
+      {mostrarBorrado && (
+        <ConfirmarBorrado titulo="Borrar reserva" textoConfirmar="Borrar" onCerrar={() => setMostrarBorrado(false)} onConfirmar={handleBorrar}>
           ¿Seguro que querés borrar la reserva de <strong>{reserva.titular}</strong>? También se borran su check-in,
           su check-out y los avisos a los operadores. Esto no se puede deshacer.
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setMostrarBorrado(false)} disabled={borrando}>Cancelar</Button>
-          <Button variant="danger" onClick={handleBorrar} disabled={borrando}>
-            {borrando ? <><Spinner size="sm" className="me-2" />Borrando...</> : 'Borrar'}
-          </Button>
-        </Modal.Footer>
-      </Modal>
+        </ConfirmarBorrado>
+      )}
     </>
   );
 }

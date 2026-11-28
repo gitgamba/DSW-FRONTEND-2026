@@ -3,7 +3,7 @@ import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
-import { apiFetch } from '../api';
+import { api } from '../api';
 import type { Rol, TipoUsuario } from '../types';
 
 interface Props {
@@ -29,9 +29,12 @@ export function TipoUsuarioForm({ registro, onCerrar, onGuardado }: Props) {
     if (Object.keys(nuevos).length) return;
     setGuardando(true);
     try {
-      await apiFetch('/tipos-usuario' + (registro ? '/' + registro.id : ''), {
-        method: registro ? 'PUT' : 'POST', body: JSON.stringify({ descripcion: descripcion.trim(), rolBase }),
-      });
+      const datos = { descripcion: descripcion.trim(), rolBase };
+      if (registro) {
+        await api.put('/tipos-usuario/' + registro.id, datos);
+      } else {
+        await api.post('/tipos-usuario', datos);
+      }
       onGuardado();
     } catch (err) { setErrorApi((err as Error).message); }
     finally { setGuardando(false); }

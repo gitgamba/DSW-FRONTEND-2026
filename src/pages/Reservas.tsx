@@ -7,6 +7,7 @@ import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import Spinner from 'react-bootstrap/Spinner';
 import Table from 'react-bootstrap/Table';
+import { rutaConFiltros } from '../api';
 import { useAuth } from '../AuthContext';
 import { useFetch } from '../useFetch';
 import { formatearFecha, hoy } from '../formato';
@@ -27,13 +28,9 @@ export function Reservas() {
   const inmuebleId = params.get('inmuebleId') ?? '';
   const usuarioId = params.get('usuarioId') ?? '';
 
-  // La API ignora los filtros vacíos, pero mejor no mandarlos
-  const query = new URLSearchParams();
-  if (desde) query.set('desde', desde);
-  if (hasta) query.set('hasta', hasta);
-  if (inmuebleId) query.set('inmuebleId', inmuebleId);
-  if (usuarioId) query.set('usuarioId', usuarioId);
-  const { data: reservas, loading, error, cargar } = useFetch<Reserva[]>(`/reservas?${query}`);
+  const { data: reservas, loading, error, cargar } = useFetch<Reserva[]>(
+    rutaConFiltros('/reservas', { desde, hasta, inmuebleId, usuarioId }),
+  );
   const inmuebles = useFetch<Inmueble[]>('/inmuebles');
 
   // Lo que el usuario está escribiendo en los filtros; se aplica recién con "Buscar"

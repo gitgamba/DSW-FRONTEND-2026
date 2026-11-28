@@ -55,7 +55,7 @@ index.html                 la única página (SPA); tiene el meta viewport para 
 src/
   main.tsx                 arranca React: BrowserRouter + AuthProvider + App
   App.tsx                  las rutas y qué roles entran a cada una
-  api.ts                   apiFetch: todas las llamadas a la API (token + errores amigables)
+  api.ts                   cliente HTTP: arma el JSON, agrega el token y traduce los errores
   AuthContext.tsx          sesión: usuario, rol, token, login() y logout()
   useFetch.ts              custom hook para traer datos con loading/error/cargar
   types.ts                 tipos de los datos de la API
@@ -85,7 +85,7 @@ src/
 
 - **Sesión.** El login (`POST /auth/login`) devuelve el token y el usuario, que se guardan en `localStorage` para que la sesión sobreviva al F5. El permiso viene de tipoUsuario.rolBase; el nombre del puesto no determina el acceso. Si el token guardado ya venció, la primera llamada a la API responde 401 y se vuelve al login.
   - Tradeoff elegido: `localStorage` lo puede leer cualquier script de la página, así que un XSS podría robar el token. React escapa todo lo que mostramos y no usamos `dangerouslySetInnerHTML`, así que el riesgo es bajo; a cambio no hay que loguearse en cada recarga.
-- **Llamadas a la API.** Todas pasan por `apiFetch` (`src/api.ts`), que agrega `Authorization: Bearer <token>` y convierte los errores de la API (`{ error, detalle? }`) en mensajes para mostrar. Si la API responde `401` con un token, la sesión venció: se borra y se vuelve al login con el aviso *"Tu sesión venció"*.
+- **Llamadas a la API.** Los métodos `api.get`, `api.post`, `api.put`, `api.patch` y `api.delete` pasan por `apiFetch` (`src/api.ts`). Ahí se arma el JSON, se agrega `Authorization: Bearer <token>` y se traducen los errores de la API (`{ error, detalle? }`). Si la API responde `401` con un token, la sesión se borra y se vuelve al login con el aviso *"Tu sesión venció"*.
 - **Permisos.** Las rutas y el menú se filtran por rol solo para que cada uno vea lo suyo. Quien controla de verdad es la API (`401`/`403`): ocultar un botón no es seguridad.
 - **Responsive (mobile-first).** Se diseña para el celular y se agrega lo que entra en pantallas más grandes:
   - Navbar: hamburguesa en celular y tablet, en línea desde `lg`.

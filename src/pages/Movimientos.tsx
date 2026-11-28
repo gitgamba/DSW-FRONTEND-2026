@@ -8,7 +8,8 @@ import Form from 'react-bootstrap/Form';
 import ListGroup from 'react-bootstrap/ListGroup';
 import Row from 'react-bootstrap/Row';
 import Spinner from 'react-bootstrap/Spinner';
-import { apiFetch } from '../api';
+import { api } from '../api';
+import { useAgenda } from '../useAgenda';
 import { useFetch } from '../useFetch';
 import { formatearFecha, hoy } from '../formato';
 import type { FilaAgenda } from '../types';
@@ -25,11 +26,7 @@ export function Movimientos() {
   const [hasta, setHasta] = useState('');
   const [soloSinAsignar, setSoloSinAsignar] = useState(false);
 
-  const query = new URLSearchParams();
-  if (desde) query.set('desde', desde);
-  if (hasta) query.set('hasta', hasta);
-  if (soloSinAsignar) query.set('sinAsignar', 'true');
-  const { data: filas, loading, error, cargar, setData } = useFetch<FilaAgenda[]>(`/movimientos/agenda?${query}`);
+  const { filas, loading, error, cargar, actualizarFila } = useAgenda({ desde, hasta, sinAsignar: soloSinAsignar });
   // Solo los de Operador y Supervisor, que son a quienes se puede asignar
   const operadores = useFetch<{ id: number; nombre: string }[]>('/usuarios/operadores');
 
@@ -39,18 +36,13 @@ export function Movimientos() {
   const [borrarId, setBorrarId] = useState<number | null>(null);
   const [filaNota, setFilaNota] = useState<FilaAgenda | null>(null); // la fila con el modal de nota abierto
 
-  // Reemplaza una fila de la lista por su versión nueva
-  const actualizarFila = (nueva: FilaAgenda) => {
-    setData(filas!.map((f) => (f.id === nueva.id ? nueva : f)));
-  };
-
   const handleAsignar = async (fila: FilaAgenda, valor: string) => {
     const usuarioId = valor === '' ? null : Number(valor); // "" = sacarle el operador
     setGuardandoId(fila.id);
     setErrorGuardar(null);
     setAviso(null);
     try {
-      await apiFetch(`/movimientos/${fila.id}/asignar`, { method: 'PATCH', body: JSON.stringify({ usuarioId }) });
+      await api.patch(`/movimientos/${fila.id}/asignar`, { usuarioId });
       const usuario = operadores.data?.find((o) => o.id === usuarioId) ?? null;
       // Con el filtro activo, la fila ya no corresponde a la lista: se vuelve a pedir
       if (soloSinAsignar) cargar();
@@ -162,7 +154,17 @@ export function Movimientos() {
         </ListGroup>
       )}
 
-      {borrarId !== null && <MovimientoBorrarModal movimientoId={borrarId} onCerrar={() => setBorrarId(null)} onBorrado={() => { setBorrarId(null); setAviso('Se borró el movimiento.'); cargar(); }} />}
+      {borrarId !== null && (
+        <MovimientoBorrarModal
+          onCerrar={() => setBorrarId(null)}
+          onConfirmar={async () => {
+            await api.delete('/movimientos/' + borrarId);
+            setBorrarId(null);
+            setAviso('Se borró el movimiento.');
+            cargar();
+          }}
+        />
+      )}
       {filaNota && (
         <NotaModal
           movimientoId={filaNota.id}

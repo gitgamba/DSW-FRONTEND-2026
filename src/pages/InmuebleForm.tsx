@@ -5,7 +5,7 @@ import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import Row from 'react-bootstrap/Row';
-import { apiFetch } from '../api';
+import { api } from '../api';
 import type { Inmueble } from '../types';
 
 interface Props { registro: Inmueble | null; onCerrar: () => void; onGuardado: () => void }
@@ -39,10 +39,11 @@ export function InmuebleForm({ registro, onCerrar, onGuardado }: Props) {
         capacidad: campos.capacidad === '' ? null : Number(campos.capacidad),
         estado: campos.estado,
       };
-      await apiFetch('/inmuebles' + (registro ? '/' + registro.id : ''), //con registro path, sin registro post
-      {
-        method: registro ? 'PATCH' : 'POST', body: JSON.stringify(datos),
-      });
+      if (registro) {
+        await api.patch('/inmuebles/' + registro.id, datos);
+      } else {
+        await api.post('/inmuebles', datos);
+      }
       onGuardado();
     } catch (err) { setErrorApi((err as Error).message); }
     finally { setGuardando(false); }

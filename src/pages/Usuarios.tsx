@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/Button';
-import Modal from 'react-bootstrap/Modal';
 import Spinner from 'react-bootstrap/Spinner';
 import Table from 'react-bootstrap/Table';
-import { apiFetch } from '../api';
+import { api } from '../api';
 import { useAuth } from '../AuthContext';
+import { ConfirmarBorrado } from '../components/ConfirmarBorrado';
 import { useFetch } from '../useFetch';
 import type { TipoUsuario, Usuario } from '../types';
 import { UsuarioForm } from './UsuarioForm';
@@ -19,8 +19,6 @@ export function Usuarios() {
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [usuarioEditando, setUsuarioEditando] = useState<Usuario | null>(null); // null = alta
   const [aBorrar, setABorrar] = useState<Usuario | null>(null);
-  const [borrando, setBorrando] = useState(false);
-  const [errorBorrar, setErrorBorrar] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
 
   const abrirFormulario = (usuario: Usuario | null) => {
@@ -34,26 +32,11 @@ export function Usuarios() {
     cargar();
   };
 
-  const cerrarBorrado = () => {
+  const handleBorrar = async (usuario: Usuario) => {
+    await api.delete(`/usuarios/${usuario.id}`);
+    setAviso(`Se borró el usuario ${usuario.nombre}.`);
     setABorrar(null);
-    setErrorBorrar(null);
-  };
-
-  const handleBorrar = async () => {
-    if (!aBorrar) return;
-    setBorrando(true);
-    setErrorBorrar(null);
-    try {
-      await apiFetch(`/usuarios/${aBorrar.id}`, { method: 'DELETE' });
-      setAviso(`Se borró el usuario ${aBorrar.nombre}.`);
-      cerrarBorrado();
-      cargar();
-    } catch (err) {
-      // Por ejemplo, 409 si es el último administrador o tiene movimientos asignados
-      setErrorBorrar((err as Error).message);
-    } finally {
-      setBorrando(false);
-    }
+    cargar();
   };
 
   return (
@@ -127,21 +110,11 @@ export function Usuarios() {
         />
       )}
 
-      <Modal show={aBorrar !== null} onHide={cerrarBorrado} centered backdrop={borrando ? 'static' : true}>
-        <Modal.Header closeButton={!borrando}>
-          <Modal.Title>Borrar usuario</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {errorBorrar && <Alert variant="danger">{errorBorrar}</Alert>}
-          ¿Seguro que querés borrar a <strong>{aBorrar?.nombre}</strong>? Esto no se puede deshacer.
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={cerrarBorrado} disabled={borrando}>Cancelar</Button>
-          <Button variant="danger" onClick={handleBorrar} disabled={borrando}>
-            {borrando ? <><Spinner size="sm" className="me-2" />Borrando...</> : 'Borrar'}
-          </Button>
-        </Modal.Footer>
-      </Modal>
+      {aBorrar && (
+        <ConfirmarBorrado titulo="Borrar usuario" textoConfirmar="Borrar" onCerrar={() => setABorrar(null)} onConfirmar={() => handleBorrar(aBorrar)}>
+          ¿Seguro que querés borrar a <strong>{aBorrar.nombre}</strong>? Esto no se puede deshacer.
+        </ConfirmarBorrado>
+      )}
     </>
   );
 }

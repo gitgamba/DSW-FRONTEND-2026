@@ -8,7 +8,8 @@ import '@fullcalendar/react/skeleton.css';
 import '@fullcalendar/react/themes/classic/theme.css';
 import '@fullcalendar/react/themes/classic/palette.css';
 import Alert from 'react-bootstrap/Alert';
-import { useFetch } from '../useFetch';
+import { aFechaISO, sumarDias, ZONA_ARGENTINA } from '../formato';
+import { useAgenda } from '../useAgenda';
 import type { FilaAgenda } from '../types';
 import { MovimientoModal } from './MovimientoModal';
 
@@ -22,10 +23,8 @@ function color(f: FilaAgenda) {
 export function AgendaCalendario({ usuarioId }: { usuarioId: string }) {
   // El rango que muestra el calendario: lo avisa FullCalendar con datesSet cada vez que se cambia de mes o semana
   const [rango, setRango] = useState<{ desde: string; hasta: string } | null>(null);
-  const filtroUsuario = usuarioId ? `&usuarioId=${usuarioId}` : '';
-  // Hasta que FullCalendar no avisa el rango, la ruta es null y no se pide nada
-  const ruta = rango ? `/movimientos/agenda?desde=${rango.desde}&hasta=${rango.hasta}${filtroUsuario}` : null;
-  const { data: filas, error, setData } = useFetch<FilaAgenda[]>(ruta);
+  // Hasta que FullCalendar no avisa el rango no se pide nada
+  const { filas, error, actualizarFila } = useAgenda(rango && { ...rango, usuarioId });
   const [seleccionada, setSeleccionada] = useState<FilaAgenda | null>(null);
 
   // Lo que necesita FullCalendar: id, título, inicio y color. La fila entera va en extendedProps para el modal.
@@ -38,7 +37,7 @@ export function AgendaCalendario({ usuarioId }: { usuarioId: string }) {
   }));
 
   const handleRealizado = (nueva: FilaAgenda) => {
-    setData(filas!.map((f) => (f.id === nueva.id ? nueva : f)));
+    actualizarFila(nueva);
     setSeleccionada(null);
   };
 
@@ -48,13 +47,16 @@ export function AgendaCalendario({ usuarioId }: { usuarioId: string }) {
       <FullCalendar
         plugins={[dayGridPlugin, timeGridPlugin, classicThemePlugin]}
         locale={esLocale}
+        timeZone={ZONA_ARGENTINA}
         initialView="dayGridMonth"
         headerToolbar={{ start: 'prev,next today', center: 'title', end: 'dayGridMonth,timeGridWeek' }}
         height="auto"
         events={eventos}
-        // startStr/endStr pueden traer hora ("2026-10-26T00:00:00-03:00"): nos quedamos con la fecha.
-        // endStr es el día siguiente al último que se ve; traer un día de más no molesta.
-        datesSet={(info) => setRango({ desde: info.startStr.slice(0, 10), hasta: info.endStr.slice(0, 10) })}
+        // FullCalendar excluye end y la API incluye hasta.
+        datesSet={(info) => setRango({
+          desde: aFechaISO(info.start, ZONA_ARGENTINA),
+          hasta: sumarDias(aFechaISO(info.end, ZONA_ARGENTINA), -1),
+        })}
         eventClick={(info) => setSeleccionada(info.event.extendedProps.fila as FilaAgenda)}
       />
 

@@ -5,7 +5,7 @@ import Button from 'react-bootstrap/Button';
 import ListGroup from 'react-bootstrap/ListGroup';
 import Spinner from 'react-bootstrap/Spinner';
 import { useAuth } from '../AuthContext';
-import { useFetch } from '../useFetch';
+import { useAgenda } from '../useAgenda';
 import { diaConNombre, hoy, sumarDias } from '../formato';
 import type { FilaAgenda } from '../types';
 import { MovimientoModal } from './MovimientoModal';
@@ -17,15 +17,12 @@ export function AgendaLista({ usuarioId }: { usuarioId: string }) {
   const { rol } = useAuth();
   const desde = hoy();
   const hasta = sumarDias(desde, 6);
-  const filtroUsuario = usuarioId ? `&usuarioId=${usuarioId}` : '';
-  const { data: filas, loading, error, cargar, setData } = useFetch<FilaAgenda[]>(
-    `/movimientos/agenda?desde=${desde}&hasta=${hasta}${filtroUsuario}`,
-  );
+  const { filas, loading, error, cargar, actualizarFila } = useAgenda({ desde, hasta, usuarioId });
   const [seleccionada, setSeleccionada] = useState<FilaAgenda | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
 
   const handleRealizado = (nueva: FilaAgenda) => {
-    setData(filas!.map((f) => (f.id === nueva.id ? nueva : f)));
+    actualizarFila(nueva);
     setSeleccionada(null);
     setAviso('¡Listo! Quedó marcado como hecho.');
   };
@@ -44,8 +41,8 @@ export function AgendaLista({ usuarioId }: { usuarioId: string }) {
     return <Alert variant="secondary">No hay check-ins ni check-outs en los próximos 7 días.</Alert>;
   }
 
-  // Las fechas distintas, en orden (la API ya manda las filas ordenadas por fecha y hora)
-  const dias = [...new Set(filas.map((f) => f.fecha))];
+  // Las fechas distintas, ordenadas acá sin depender del orden de la API ("AAAA-MM-DD" se ordena bien como texto)
+  const dias = [...new Set(filas.map((f) => f.fecha))].sort();
 
   return (
     <>
